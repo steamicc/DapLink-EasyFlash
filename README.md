@@ -3,29 +3,32 @@
 This tools is for internal usage, we used it to load daplink on STM32L475, to replace ST-LINK.
 
 ## Requirements
+
+### System
   - OpenOCD: `sudo apt install openocd`
   - Python3: `sudo apt install python3`
   - python3-tk: `sudo apt install python3-tk`
 
 _All in one_ : `sudo apt install openocd python3 python3-tk` 
 
-## Dev. Dependencies
-_Just in case you wouldn't use the virtual env_
-  - [PySimpleGUI](https://pysimplegui.readthedocs.io/en/latest/): `pip install pysimplegui`
+### Python
+  _You should use virtual env_
   - virtual-env: `pip install virtualenv` _(optionnal)_
+  - [PySimpleGUI](https://pysimplegui.readthedocs.io/en/latest/): `pip install pysimplegui`
   - [psutil](https://psutil.readthedocs.io/en/latest/): `pip install psutil`
 
-Enter in the virtual env before start changing anything ;)
+_All in one_ : `pip3 install virtualenv pysimplegui psutil` 
 
 ## Usage
 
 The program offer a simple GUI. to select the bin that will be flashed on the STM32F1x, and automatically apply the process.
 
-  1. Launch the script `start.sh` (Linux) ~~or `start.ps1` (Windows)~~ TODO
+  1. Launch the script `easy_daplink.py` file (e.g `python3 easy_daplink.py`)  
+      If you are using a virtual env, you can start the program with `start_venv.sh`
   2. Select the files
-     1. Select the bootloader binary to flash (e.g: `stm32f103xb_bl.bin`)
-     2. Select the firmware binary to flash (e.g: `stm32f103xb_stm32l475vg_if.bin`)
-     3. Select the program binary to flash _(optionnal)_
+     1. Select the bootloader binary file to flash (e.g: `stm32f103xb_bl.bin`)
+     2. Select the firmware binary file to flash (e.g: `stm32f103xb_stm32l475vg_if.bin`)
+     3. Select the program binary file to flash _(optionnal)_
   3. Set the mount point name
      1. For "Maintenance", after bootloader was flashed (e.g: `MAINTENANCE`)
      2. For "Programming", after firmware was flashed (e.g: `DIS_L4IOT`, `DAPLINK`, ...)
