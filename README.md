@@ -1,6 +1,6 @@
 # Simple DAPLink tool
 
-This tools is for internal usage, we use it to load daplink on STM32L475, to replace ST-LINK.
+This tools is for internal usage, we use it to load daplink on target (STM32L475, STM32WB55, ...), to replace ST-LINK.
 
 ![](screenshot.png "Beautiful, isn't it ?")
 
