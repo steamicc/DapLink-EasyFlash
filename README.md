@@ -6,21 +6,24 @@ This tools is for internal usage, we use it to load daplink on STM32L475, to rep
 
 _This is beautiful, isn't it?_
 
+
+
 ## Requirements
 
 ### :computer: System
   - OpenOCD: `sudo apt install openocd`
   - Python3: `sudo apt install python3`
+  - Python3-pip: `sudo apt install python3-pip`
   - python3-tk: `sudo apt install python3-tk`
 
-:bulb: All in one: `sudo apt install openocd python3 python3-tk` 
+:bulb: All in one: `sudo apt install openocd python3 python3-pip python3-tk` 
 
 ### :snake: Python
-  - virtual-env: `pip install virtualenv` _(optionnal)_
+  - [virtual-env](https://docs.python-guide.org/dev/virtualenvs/#lower-level-virtualenv): `pip install virtualenv` _(optionnal)_
   - [PySimpleGUI](https://pysimplegui.readthedocs.io/en/latest/): `pip install pysimplegui`
   - [psutil](https://psutil.readthedocs.io/en/latest/): `pip install psutil`
 
-:bulb: All in one: `pip3 install virtualenv pysimplegui psutil` 
+:bulb: You can install everything (virtual env include), with the `install.sh` script.
 
 ## Usage
 

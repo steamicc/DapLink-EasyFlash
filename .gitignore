@@ -1,3 +1,5 @@
 bootloader
 settings.dat
-__pycache__
+
+__pycache__/
+venv/
