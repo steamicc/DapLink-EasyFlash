@@ -11,7 +11,7 @@ _This is beautiful, isn't it?_
 ## Requirements
 
 ### :computer: System
-  - OpenOCD: `sudo apt install openocd`
+  - [OpenOCD](https://openocd.org/): `sudo apt install openocd`
   - Python3: `sudo apt install python3`
   - Python3-pip: `sudo apt install python3-pip`
   - python3-tk: `sudo apt install python3-tk`
