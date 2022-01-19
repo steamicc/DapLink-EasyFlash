@@ -27,17 +27,17 @@ layout = [
     [
         sg.Text("Select the BOOTLOADER file:"),
         sg.Input(enable_events=True, key=BOOTLOADER, default_text=settings.get_value(BOOTLOADER)),
-        sg.FileBrowse(file_types=(("BIN files", "*.bin"), ("HEX files", "*.hex"), ("All Files", "*.* *"),))
+        sg.FileBrowse(file_types=(("Compatible files", "*.bin *.hex"), ("BIN files", "*.bin"), ("HEX files", "*.hex"), ("All Files", "*.* *"),))
     ],
     [
         sg.Text("Select the FIRMWARE file:"),
         sg.Input(enable_events=True, key=FIRMWARE, default_text=settings.get_value(FIRMWARE)),
-        sg.FileBrowse(file_types=(("BIN files", "*.bin"), ("HEX files", "*.hex"), ("All Files", "*.* *"),))
+        sg.FileBrowse(file_types=(("Compatible files", "*.bin *.hex"), ("BIN files", "*.bin"), ("HEX files", "*.hex"), ("All Files", "*.* *"),))
     ],
     [
         sg.Text("Select the TEST PROGRAM file (skip if empty):"),
         sg.Input(enable_events=True, key=PROGRAM, default_text=settings.get_value(PROGRAM)),
-        sg.FileBrowse(file_types=(("BIN files", "*.bin"), ("HEX files", "*.hex"), ("All Files", "*.* *"),))
+        sg.FileBrowse(file_types=(("Compatible files", "*.bin *.hex"), ("BIN files", "*.bin"), ("HEX files", "*.hex"), ("All Files", "*.* *"),))
     ],
     [
         sg.Text("\"MAINTENANCE\" mount point name: "),
