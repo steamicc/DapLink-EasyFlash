@@ -1,12 +1,12 @@
-from cgitb import text
 from datetime import datetime
 from sys import stderr
 import time
 import os
 import threading
-import subprocess;
-import shutil;
-import psutil;
+import subprocess
+import shutil
+import psutil
+import re
 
 import PySimpleGUI as sg
 
@@ -225,24 +225,30 @@ def steps(values):
         log_error("Failed to open the target... Abort")
         return
 
+    log_info("Search for 'Git SHA' from DETAILS.TXT: ")
+    openocd_read_SHA(values[MAINTENACE_MOUNT_NAME])
+
     log_info("Send firmware to device")
     if not openocd_copy_firmware(values[FIRMWARE], values[MAINTENACE_MOUNT_NAME]) :
         log_error("Failed to copy the firmware to the target... Abort")
         return
 
-    if len(values[PROGRAM_MOUNT_NAME]) == 0 or len(values[PROGRAM]) == 0:
-        log_warning("Skipping programming steps")
+    log_info("Wait for device programming mount point")
+    if not openocd_wait_mountpoint(int(values[TIMEOUT_MOUNT]), values[PROGRAM_MOUNT_NAME]) :
+        log_error("Failed to open the target... Abort")
         return
     else:
-        log_info("Wait for device programming mount point")
-        if not openocd_wait_mountpoint(int(values[TIMEOUT_MOUNT]), values[PROGRAM_MOUNT_NAME]) :
-            log_error("Failed to open the target... Abort")
-            return
+        log_info("Search for 'Git SHA' from DETAILS.TXT: ")
+        openocd_read_SHA(values[PROGRAM_MOUNT_NAME])
 
-        log_info("Send program to device")
-        if not openocd_copy_firmware(values[PROGRAM], values[PROGRAM_MOUNT_NAME]) :
-            log_error("Failed to copy the program to the target... Abort")
+        if len(values[PROGRAM_MOUNT_NAME]) == 0 or len(values[PROGRAM]) == 0:
+            log_warning("Skipping programming steps")
             return
+        else:
+            log_info("Send program to device")
+            if not openocd_copy_firmware(values[PROGRAM], values[PROGRAM_MOUNT_NAME]) :
+                log_error("Failed to copy the program to the target... Abort")
+                return
 
 
 def openocd_unlock():
@@ -316,8 +322,30 @@ def openocd_copy_firmware(file, mount_point):
 
     return True
 
+def openocd_read_SHA(mount_point):
+    partitions = psutil.disk_partitions()
+    path = None
+    content = ""
 
+    for p in partitions:
+        if mount_point in p.mountpoint:
+            path = p.mountpoint
+            break
 
+    if path == None :
+        log_error("Failed to find the '{}' mountpoint".format(path))
+        return
+
+    with open("{}/DETAILS.TXT".format(path), "r") as f:
+        content = f.read()
+    
+    res = re.search(r'Git SHA: ([a-zA-Z0-9]*)$', content, re.MULTILINE)
+
+    if res != None:
+        log_info(res.group(0))
+    else:
+        log_warning("No SHA found in file...")
+    
 
 window["-LOG-"].reroute_stdout_to_here()
 window["-LOG-"].reroute_stderr_to_here()
