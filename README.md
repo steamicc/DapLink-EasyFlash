@@ -1,5 +1,22 @@
 # Simple DAPLink tool
 
+ - [Introduction](#introduction)
+ - [Requirements](#requirements)
+   - [:computer: System](#computer-system)
+   - [:snake: Python](#snake-python)
+   - [:floppy_disk: Bootloader & Firmware](#floppy_disk-bootloader--firmware)
+ - [Usage](#usage)
+   - [:electric_plug: Hardware](#electric_plug-hardware)
+     - [STM32 Disco L475 IoTNode](#stm32-disco-l475-iotnode)
+       - [STLink V2 (or clones)](#stlink-v2-or-clones)
+       - [Black Magic Probe (V2.1 in this picture)](#black-magic-probe-v21-in-this-picture)
+       - [Nucleo's STLink](#nucleos-stlink)
+     - [STM32 Nucleo WB55](#stm32-nucleo-wb55)
+   - [:computer: Software](#computer-software)
+ - [Test files](#test-files)
+   - [`test-l475.bin`](#test-l475bin)
+
+## Introduction
 This tools is for internal usage, we use it to load daplink on target (STM32L475, STM32WB55, ...), to replace ST-LINK.
 
 With OpenOCD, the program steps are :
@@ -9,9 +26,7 @@ With OpenOCD, the program steps are :
   4. Send firmware
   5. _(optionnal)_ Send test program 
 
-![](doc/screenshot.png "Beautiful, isn't it ?")
-
-_This is beautiful, isn't it?_
+![](doc/screenshot.png)
 
 
 
