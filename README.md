@@ -2,6 +2,13 @@
 
 This tools is for internal usage, we use it to load daplink on target (STM32L475, STM32WB55, ...), to replace ST-LINK.
 
+With OpenOCD, the program steps are :
+  1. Unlock the RDP of the STM32F1x (if needed)
+  2. Mass erase flash
+  3. Flash bootloader
+  4. Send firmware
+  5. _(optionnal)_ Send test program 
+
 ![](doc/screenshot.png "Beautiful, isn't it ?")
 
 _This is beautiful, isn't it?_
@@ -62,14 +69,14 @@ Here are somes schematics, to show you how to plug probes to the board.
 _Soon..._ ;)
 
 ### :computer: Software
-The program offer a simple GUI. to select the bin that will be flashed on the STM32F1x, and automatically apply the process.
+The program offer a simple GUI interface to select the bootload and the firmware that will be flashed on the STM32F1x.
 
   1. Launch the script `easy_daplink.py` file (e.g `python3 easy_daplink.py`)  
       If you are using a virtual env, you can start the program with `start_venv.sh` (Linux only)
   2. Select the files
      1. Select the bootloader binary file to flash (e.g: `stm32f103xb_bl.bin`)
      2. Select the firmware binary file to flash (e.g: `stm32f103xb_stm32l475vg_if.bin`)
-     3. Select the program binary file to flash _(optionnal)_
+     3. _(optionnal)_ Select the program binary file to flash (you can find test program in `test bin` folder)
   3. Set the mount point name
      1. For "Maintenance", after bootloader was flashed (e.g: `MAINTENANCE`)
      2. For "Programming", after firmware was flashed (e.g: `DIS_L4IOT`, `DAPLINK`, ...)
@@ -79,9 +86,9 @@ The program offer a simple GUI. to select the bin that will be flashed on the ST
 :bulb: Pro tips: All inputs are saved for the next time you will open the tool !
 
 
-## Process
-  * Unlock the RDP of the STM32F1x (if needed)
-  * Mass erase flash
-  * Write bootloader
-  * Write firmware
-  * Write test program _(optionnal)_
+## Test files
+In the `test bin` folder, you can find some simple programs for targets. 
+
+### `test-l475.bin`
+It blinks the LEDs, `LD1` and `LD2`, in two different patterns.  
+![](doc/test_l475.gif)
