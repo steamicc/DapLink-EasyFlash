@@ -15,10 +15,13 @@ class Settings:
         self.save()
 
     def get_value(self, key):
+        return self.get_value_or_default(key, None)
+
+    def get_value_or_default(self, key, default):
         if key in self.dict :
             return self.dict[key]
         else:
-            return None
+            return default
 
     def save(self):
         try:
