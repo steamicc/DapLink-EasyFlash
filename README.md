@@ -89,7 +89,7 @@ The program offer a simple GUI interface to select the bootload and the firmware
   1. Launch the script `easy_daplink.py` file (e.g `python3 easy_daplink.py`)  
       _If you are using a virtual env, you can start the program with `start_venv.sh` (Linux only)_
   2. Select the `script` folder of OpenOCD (e.g On Linux : `/usr/share/openocd/scripts/`)
-  3. Select files
+  3. Select files you downloaded from [requirements](#floppy_disk-bootloader--firmware)
      1. The bootloader binary file to flash (e.g: `stm32f103xb_bl.bin`)
      2. The firmware binary file to flash (e.g: `stm32f103xb_stm32l475vg_if.bin`)
      3. _(optionnal)_ The program binary file to flash (you can find test program in `test bin` folder)
