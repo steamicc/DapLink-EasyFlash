@@ -2,7 +2,7 @@
 
 This tools is for internal usage, we use it to load daplink on target (STM32L475, STM32WB55, ...), to replace ST-LINK.
 
-![](screenshot.png "Beautiful, isn't it ?")
+![](doc/screenshot.png "Beautiful, isn't it ?")
 
 _This is beautiful, isn't it?_
 
@@ -11,26 +11,59 @@ _This is beautiful, isn't it?_
 ## Requirements
 
 ### :computer: System
-  - [OpenOCD](https://openocd.org/): `sudo apt install openocd`
-  - Python3: `sudo apt install python3`
-  - Python3-pip: `sudo apt install python3-pip`
-  - python3-tk: `sudo apt install python3-tk`
+  - [OpenOCD](https://openocd.org/): 
+    - Linux: `sudo apt install openocd`
+    - Windows:
+      - [https://github.com/openocd-org/openocd/releases/latest](https://github.com/openocd-org/openocd/releases/latest)  
+      - add the `bin` folder to your [path](https://www.architectryan.com/2018/03/17/add-to-the-path-on-windows-10/) (e.g `C:/openOCD/bin`).
+  - Python 3.x: 
+    - Linux: `sudo apt install python3`
+    - Windows: [https://www.python.org/downloads/windows/](https://www.python.org/downloads/windows/)
+  - Python3 pip: 
+    - Linux: `sudo apt install python3-pip`
+    - Windows (If not installed with Python): [https://packaging.python.org/en/latest/tutorials/installing-packages/#requirements-for-installing-packages](https://packaging.python.org/en/latest/tutorials/installing-packages/#requirements-for-installing-packages)
+  - python3 tk: 
+    - Linux: `sudo apt install python3-tk`
+    - Windows: [https://www.geeksforgeeks.org/how-to-install-tkinter-in-windows/](https://www.geeksforgeeks.org/how-to-install-tkinter-in-windows/)
 
-:bulb: All in one: `sudo apt install openocd python3 python3-pip python3-tk` 
+:bulb: All in one (Linux only): `sudo apt install openocd python3 python3-pip python3-tk` 
 
 ### :snake: Python
   - [virtual-env](https://docs.python-guide.org/dev/virtualenvs/#lower-level-virtualenv): `pip install virtualenv` _(optionnal)_
   - [PySimpleGUI](https://pysimplegui.readthedocs.io/en/latest/): `pip install pysimplegui`
   - [psutil](https://psutil.readthedocs.io/en/latest/): `pip install psutil`
 
-:bulb: You can install everything (virtual env include), with the `install.sh` script.
+:bulb: You can install everything (virtual env include), with the `install.sh` script  (Linux only).
+
+### :floppy_disk: Bootloader & Firmware
+DapLink bootloaders and firmwares can be found at [https://github.com/letssteam/DAPLink/releases](https://github.com/letssteam/DAPLink/releases)
 
 ## Usage
 
+### :electric_plug: Hardware
+To allow the program flash the DapLink bootloader, the DapLink firmware, then the test program (optional), it's important to wiring you board.
+
+#### STM32 Disco L475 IoTNode
+Here are somes schematics, to show you how to plug probes to the board.
+
+##### STLink V2 (or clones)
+![](doc/wiring_l475_stlinkv2.png "Wirring with the STLink V2 (or clones)")
+
+##### Black Magic Probe (V2.1 in this picture)
+![](doc/wiring_l475_bmp.png "Wirring with the Black Magick probe (V2.1 in the picture)")
+
+##### Nucleo's STLink  
+:warning: Remove both jumper `CN2` (orange rectangle) before flashing anything. Then **replace** them when you are finished.
+![](doc/wiring_l475_nucleo.png "Wirring this the nucleo's STLink")
+
+#### STM32 Nucleo WB55
+_Soon..._ ;)
+
+### :computer: Software
 The program offer a simple GUI. to select the bin that will be flashed on the STM32F1x, and automatically apply the process.
 
   1. Launch the script `easy_daplink.py` file (e.g `python3 easy_daplink.py`)  
-      If you are using a virtual env, you can start the program with `start_venv.sh`
+      If you are using a virtual env, you can start the program with `start_venv.sh` (Linux only)
   2. Select the files
      1. Select the bootloader binary file to flash (e.g: `stm32f103xb_bl.bin`)
      2. Select the firmware binary file to flash (e.g: `stm32f103xb_stm32l475vg_if.bin`)
