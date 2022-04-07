@@ -87,16 +87,17 @@ _Soon..._ ;)
 The program offer a simple GUI interface to select the bootload and the firmware that will be flashed on the STM32F1x.
 
   1. Launch the script `easy_daplink.py` file (e.g `python3 easy_daplink.py`)  
-      If you are using a virtual env, you can start the program with `start_venv.sh` (Linux only)
-  2. Select the files
-     1. Select the bootloader binary file to flash (e.g: `stm32f103xb_bl.bin`)
-     2. Select the firmware binary file to flash (e.g: `stm32f103xb_stm32l475vg_if.bin`)
-     3. _(optionnal)_ Select the program binary file to flash (you can find test program in `test bin` folder)
-  3. Set the mount point name
+      _If you are using a virtual env, you can start the program with `start_venv.sh` (Linux only)_
+  2. Select the `script` folder of OpenOCD (e.g On Linux : `/usr/share/openocd/scripts/`)
+  3. Select files
+     1. The bootloader binary file to flash (e.g: `stm32f103xb_bl.bin`)
+     2. The firmware binary file to flash (e.g: `stm32f103xb_stm32l475vg_if.bin`)
+     3. _(optionnal)_ The program binary file to flash (you can find test program in `test bin` folder)
+  4. Set the mount point name
      1. For "Maintenance", after bootloader was flashed (e.g: `MAINTENANCE`)
      2. For "Programming", after firmware was flashed (e.g: `DIS_L4IOT`, `DAPLINK`, ...)
-  4. Define the timeout mount point waiting (e.g: `10000`), in milliseconds (1000 milliseconds = 1 second)
-  5. Push the "Start" button.
+  5. Define the timeout mount point waiting (e.g: `10000`), in milliseconds (1000 milliseconds = 1 second)
+  6. Push the "Start" button.
 
 :bulb: Pro tips: All inputs are saved for the next time you will open the tool !
 
