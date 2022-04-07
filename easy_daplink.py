@@ -12,6 +12,7 @@ import PySimpleGUI as sg
 
 from settings import Settings
 
+SCRIPT_FOLDER = "-SCRIPT_FOLDER-"
 BOOTLOADER = "-BOOTLOADER-"
 FIRMWARE = "-FIRMWARE-"
 PROGRAM = "-TEST_PROGRAM-"
@@ -25,31 +26,36 @@ sg.theme("BlueMono")
 
 layout = [
     [
+        sg.Text("OpenOCD 'scripts' folder:"),
+        sg.Input(enable_events=True, key=SCRIPT_FOLDER, default_text=settings.get_value_or_default(SCRIPT_FOLDER, "/usr/share/openocd/scripts/") ),
+        sg.FolderBrowse(initial_folder=settings.get_value(SCRIPT_FOLDER))
+    ],
+    [
         sg.Text("Select the BOOTLOADER file:"),
         sg.Input(enable_events=True, key=BOOTLOADER, default_text=settings.get_value(BOOTLOADER)),
-        sg.FileBrowse(file_types=(("Compatible files", "*.bin *.hex"), ("BIN files", "*.bin"), ("HEX files", "*.hex"), ("All Files", "*.* *"),))
+        sg.FileBrowse(file_types=(("Compatible files", "*.bin *.hex"), ("BIN files", "*.bin"), ("HEX files", "*.hex"), ("All Files", "*.* *"),), initial_folder=os.path.dirname(settings.get_value(BOOTLOADER)))
     ],
     [
         sg.Text("Select the FIRMWARE file:"),
         sg.Input(enable_events=True, key=FIRMWARE, default_text=settings.get_value(FIRMWARE)),
-        sg.FileBrowse(file_types=(("Compatible files", "*.bin *.hex"), ("BIN files", "*.bin"), ("HEX files", "*.hex"), ("All Files", "*.* *"),))
+        sg.FileBrowse(file_types=(("Compatible files", "*.bin *.hex"), ("BIN files", "*.bin"), ("HEX files", "*.hex"), ("All Files", "*.* *"),), initial_folder=os.path.dirname(settings.get_value(FIRMWARE)))
     ],
     [
         sg.Text("Select the TEST PROGRAM file (skip if empty):"),
         sg.Input(enable_events=True, key=PROGRAM, default_text=settings.get_value(PROGRAM)),
-        sg.FileBrowse(file_types=(("Compatible files", "*.bin *.hex"), ("BIN files", "*.bin"), ("HEX files", "*.hex"), ("All Files", "*.* *"),))
+        sg.FileBrowse(file_types=(("Compatible files", "*.bin *.hex"), ("BIN files", "*.bin"), ("HEX files", "*.hex"), ("All Files", "*.* *"),), initial_folder=os.path.dirname(settings.get_value(PROGRAM)))
     ],
     [
         sg.Text("\"MAINTENANCE\" mount point name: "),
-        sg.Input(enable_events=True, key=MAINTENACE_MOUNT_NAME, default_text=settings.get_value(MAINTENACE_MOUNT_NAME) if settings.get_value(MAINTENACE_MOUNT_NAME) != None else "MAINTENANCE" )
+        sg.Input(enable_events=True, key=MAINTENACE_MOUNT_NAME, default_text=settings.get_value_or_default(MAINTENACE_MOUNT_NAME, "MAINTENANCE") )
     ],
     [
         sg.Text("\"DAPLINK\" programming mount point name (skip if empty): "),
-        sg.Input(enable_events=True, key=PROGRAM_MOUNT_NAME, default_text=settings.get_value(PROGRAM_MOUNT_NAME) if settings.get_value(PROGRAM_MOUNT_NAME) != None else "DIS_L4IOT" )
+        sg.Input(enable_events=True, key=PROGRAM_MOUNT_NAME, default_text=settings.get_value_or_default(PROGRAM_MOUNT_NAME, "DIS_L4IOT" ) )
     ],
     [
         sg.Text("Timeout (in milliseconds) for mount points: "),
-        sg.Input(enable_events=True, key=TIMEOUT_MOUNT, default_text=settings.get_value(TIMEOUT_MOUNT) if settings.get_value(TIMEOUT_MOUNT) != None else "10000" )
+        sg.Input(enable_events=True, key=TIMEOUT_MOUNT, default_text=settings.get_value_or_default(TIMEOUT_MOUNT, "10000" ) )
     ],
     [
         sg.Button(button_text="Start !", enable_events=True, key=START_BUTTON, expand_x=True, disabled=True)
@@ -70,6 +76,13 @@ def main():
 
         if event == sg.WIN_CLOSED or event == "Quit":
             break
+
+        elif event == SCRIPT_FOLDER :
+            if is_valid_dir(values[SCRIPT_FOLDER]):
+                window[SCRIPT_FOLDER].update(background_color=default_bg_input)
+                settings.set_value(SCRIPT_FOLDER, values[SCRIPT_FOLDER])
+            else:
+                window[SCRIPT_FOLDER].update(background_color="#DD5555")
 
         elif event == BOOTLOADER :
             if is_valid_file(values[BOOTLOADER]):
@@ -169,13 +182,20 @@ def is_valid_file(filepath):
 
     return os.path.isfile(filepath)
 
+def is_valid_dir(dirpath):
+    if len(dirpath) == 0:
+        return False
+
+    return os.path.isdir(dirpath)
+
 
 def is_valid_number(num):
     return num.isdigit()
 
 
 def update_start_button_state(values, is_thread_running):
-    if is_valid_file(values[BOOTLOADER]) and \
+    if      is_valid_dir(values[SCRIPT_FOLDER]) and \
+            is_valid_file(values[BOOTLOADER]) and \
             is_valid_file(values[FIRMWARE]) and \
             is_valid_number(values[TIMEOUT_MOUNT]) and \
             len(values[MAINTENACE_MOUNT_NAME]) > 0 and \
@@ -206,17 +226,17 @@ def openocd_procedure(values):
 def steps(values):
 
     log_info("Unlocking the target (RDP)")
-    if not openocd_unlock() :
+    if not openocd_unlock(values[SCRIPT_FOLDER]) :
         log_error("Failed to unlock the target... Abort")
         return
 
     log_info("Mass erase the target")
-    if not openocd_mass_erase() :
+    if not openocd_mass_erase(values[SCRIPT_FOLDER]) :
         log_error("Failed to erase the target... Abort")
         return
         
     log_info("Flash the target")
-    if not openocd_flash(values[BOOTLOADER]) :
+    if not openocd_flash(values[BOOTLOADER], values[SCRIPT_FOLDER]) :
         log_error("Failed to flash the target... Abort")
         return
         
@@ -251,8 +271,8 @@ def steps(values):
                 return
 
 
-def openocd_unlock():
-    proc = subprocess.run(["openocd", "-s", "/usr/share/openocd/scripts/", "-f", "configs/openocd-unlock.cfg"], capture_output=True, text=True)
+def openocd_unlock(script_folder):
+    proc = subprocess.run(["openocd", "-s", script_folder, "-f", "configs/openocd-unlock.cfg"], capture_output=True, text=True)
     
     if proc.returncode == 0:
         return True
@@ -262,8 +282,8 @@ def openocd_unlock():
     return False
 
 
-def openocd_mass_erase():
-    proc = subprocess.run(["openocd", "-s", "/usr/share/openocd/scripts/", "-f", "configs/openocd-mass-erase.cfg"], capture_output=True, text=True)
+def openocd_mass_erase(script_folder):
+    proc = subprocess.run(["openocd", "-s", script_folder, "-f", "configs/openocd-mass-erase.cfg"], capture_output=True, text=True)
     
     if proc.returncode == 0:
         return True
@@ -273,9 +293,9 @@ def openocd_mass_erase():
     return False
 
 
-def openocd_flash(bootloader):
+def openocd_flash(bootloader, script_folder):
     shutil.copy(bootloader, "./bootloader", follow_symlinks=True)
-    proc = subprocess.run(["openocd", "-s", "/usr/share/openocd/scripts/", "-f", "configs/openocd-flash.cfg"], capture_output=True, text=True)
+    proc = subprocess.run(["openocd", "-s", script_folder, "-f", "configs/openocd-flash.cfg"], capture_output=True, text=True)
     
     if proc.returncode == 0:
         return True
