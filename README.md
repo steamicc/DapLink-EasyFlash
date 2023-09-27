@@ -1,20 +1,21 @@
 # Simple DAPLink tool
 
- - [Introduction](#introduction)
- - [Requirements](#requirements)
-   - [:computer: System](#computer-system)
-   - [:snake: Python](#snake-python)
-   - [:floppy_disk: Bootloader & Firmware](#floppy_disk-bootloader--firmware)
- - [Usage](#usage)
-   - [:electric_plug: Hardware](#electric_plug-hardware)
-     - [STM32 Disco L475 IoTNode](#stm32-disco-l475-iotnode)
-       - [STLink V2 (or clones)](#stlink-v2-or-clones)
-       - [Black Magic Probe (V2.1 in this picture)](#black-magic-probe-v21-in-this-picture)
-       - [Nucleo's STLink](#nucleos-stlink)
-     - [STM32 Nucleo WB55](#stm32-nucleo-wb55)
-   - [:computer: Software](#computer-software)
- - [Test files](#test-files)
-   - [`test-l475.bin`](#test-l475bin)
+- [Simple DAPLink tool](#simple-daplink-tool)
+  - [Introduction](#introduction)
+  - [Requirements](#requirements)
+    - [:computer: System](#computer-system)
+    - [:snake: Python](#snake-python)
+    - [:floppy\_disk: Bootloader \& Firmware](#floppy_disk-bootloader--firmware)
+  - [Usage](#usage)
+    - [:electric\_plug: Hardware](#electric_plug-hardware)
+      - [STM32 Disco L475 IoTNode](#stm32-disco-l475-iotnode)
+        - [STLink V2 (or clones)](#stlink-v2-or-clones)
+        - [Black Magic Probe (V2.1 in this picture)](#black-magic-probe-v21-in-this-picture)
+        - [Nucleo's STLink](#nucleos-stlink)
+      - [STM32 Nucleo WB55](#stm32-nucleo-wb55)
+    - [:computer: Software](#computer-software)
+  - [Test files](#test-files)
+    - [`test-l475.bin`](#test-l475bin)
 
 ## Introduction
 This tools is for internal usage, we use it to load daplink on target (STM32L475, STM32WB55, ...), to replace ST-LINK.
@@ -87,7 +88,7 @@ _Soon..._ ;)
 The program offer a simple GUI interface to select the bootload and the firmware that will be flashed on the STM32F1x.
 
   1. Launch the script `easy_daplink.py` file (e.g `python3 easy_daplink.py`)  
-      _If you are using a virtual env, you can start the program with `start_venv.sh` (Linux only)_
+      _If you are using a virtual env activate it with `source venv/bin/activate`, or you can start the program with `start_venv.sh` (Linux only)_
   2. Select the `script` folder of OpenOCD (e.g On Linux : `/usr/share/openocd/scripts/`)
   3. Select files you downloaded from [requirements](#floppy_disk-bootloader--firmware)
      1. The bootloader binary file to flash (e.g: `stm32f103xb_bl.bin`)
