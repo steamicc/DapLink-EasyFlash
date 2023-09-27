@@ -50,7 +50,7 @@ layout = [
         sg.Input(enable_events=True, key=MAINTENACE_MOUNT_NAME, default_text=settings.get_value_or_default(MAINTENACE_MOUNT_NAME, "MAINTENANCE") )
     ],
     [
-        sg.Text("\"DAPLINK\" programming mount point name (skip if empty): "),
+        sg.Text("\"DAPLINK\" programming mount point name: "),
         sg.Input(enable_events=True, key=PROGRAM_MOUNT_NAME, default_text=settings.get_value_or_default(PROGRAM_MOUNT_NAME, "DIS_L4IOT" ) )
     ],
     [
@@ -199,6 +199,7 @@ def update_start_button_state(values, is_thread_running):
             is_valid_file(values[FIRMWARE]) and \
             is_valid_number(values[TIMEOUT_MOUNT]) and \
             len(values[MAINTENACE_MOUNT_NAME]) > 0 and \
+            len(values[PROGRAM_MOUNT_NAME]) > 0 and \
             not is_thread_running:
         window[START_BUTTON].update(disabled=False)
     else:
@@ -240,12 +241,12 @@ def steps(values):
         log_error("Failed to flash the target... Abort")
         return
         
-    log_info("Wait for device 'MAINTENANCE' mount point")
+    log_info("Wait for device '{}' mount point".format(values[MAINTENACE_MOUNT_NAME]))
     if not openocd_wait_mountpoint(int(values[TIMEOUT_MOUNT]), values[MAINTENACE_MOUNT_NAME]) :
         log_error("Failed to open the target... Abort")
         return
 
-    log_info("Search for 'Git SHA' from DETAILS.TXT: ")
+    log_info("Search for 'Git SHA' from DETAILS.TXT in '{}' mount point: ".format(values[MAINTENACE_MOUNT_NAME]))
     openocd_read_SHA(values[MAINTENACE_MOUNT_NAME])
 
     log_info("Send firmware to device")
@@ -253,15 +254,15 @@ def steps(values):
         log_error("Failed to copy the firmware to the target... Abort")
         return
 
-    log_info("Wait for device programming mount point")
+    log_info("Wait for device {} mount point".format(values[PROGRAM_MOUNT_NAME]))
     if not openocd_wait_mountpoint(int(values[TIMEOUT_MOUNT]), values[PROGRAM_MOUNT_NAME]) :
         log_error("Failed to open the target... Abort")
         return
     else:
-        log_info("Search for 'Git SHA' from DETAILS.TXT: ")
+        log_info("Search for 'Git SHA' from DETAILS.TXT of '{}' mount point: ".format(values[PROGRAM_MOUNT_NAME]))
         openocd_read_SHA(values[PROGRAM_MOUNT_NAME])
 
-        if len(values[PROGRAM_MOUNT_NAME]) == 0 or len(values[PROGRAM]) == 0:
+        if len(values[PROGRAM]) == 0:
             log_warning("Skipping programming steps")
             return
         else:
