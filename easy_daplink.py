@@ -319,7 +319,7 @@ def openocd_wait_mountpoint(timeout, mount_point):
                 return True
 
         if (time.time() - tmp) * 1000 > 1000:
-            log_info("Wainting...")
+            log_info("Waiting...")
             tmp = time.time()
 
         if (time.time() - start) * 1000 >= timeout:
