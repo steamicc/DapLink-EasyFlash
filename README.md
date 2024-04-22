@@ -4,6 +4,9 @@
   - [Introduction](#introduction)
   - [Requirements](#requirements)
     - [:computer: System](#computer-system)
+      - [Linux](#linux)
+      - [Windows](#windows)
+      - [MacOs](#macos)
     - [:snake: Python](#snake-python)
     - [:floppy\_disk: Bootloader \& Firmware](#floppy_disk-bootloader--firmware)
   - [Usage](#usage)
@@ -34,26 +37,26 @@ With OpenOCD, the program steps are :
 ## Requirements
 
 ### :computer: System
+#### Linux
+ - [OpenOCD](https://openocd.org/): `sudo apt install openocd`
+ - Python 3.x: `sudo apt install python3`
+ - Python3 pip: `sudo apt install python3-pip`
+
+:bulb: All in one: `sudo apt install openocd python3 python3-pip` 
+
+#### Windows
   - [OpenOCD](https://openocd.org/): 
-    - Linux: `sudo apt install openocd`
-    - Windows:
-      - [https://github.com/openocd-org/openocd/releases/latest](https://github.com/openocd-org/openocd/releases/latest)  
+      - Download lastest release form [https://github.com/openocd-org/openocd/releases/latest](https://github.com/openocd-org/openocd/releases/latest)  
       - add the `bin` folder to your [path](https://www.architectryan.com/2018/03/17/add-to-the-path-on-windows-10/) (e.g `C:/openOCD/bin`).
-  - Python 3.x: 
-    - Linux: `sudo apt install python3`
-    - Windows: [https://www.python.org/downloads/windows/](https://www.python.org/downloads/windows/)
-  - Python3 pip: 
-    - Linux: `sudo apt install python3-pip`
-    - Windows (If not installed with Python): [https://packaging.python.org/en/latest/tutorials/installing-packages/#requirements-for-installing-packages](https://packaging.python.org/en/latest/tutorials/installing-packages/#requirements-for-installing-packages)
-  - python3 tk: 
-    - Linux: `sudo apt install python3-tk`
-    - Windows: [https://www.geeksforgeeks.org/how-to-install-tkinter-in-windows/](https://www.geeksforgeeks.org/how-to-install-tkinter-in-windows/)
+  - Python 3.x: Download it from [https://www.python.org/downloads/windows/](https://www.python.org/downloads/windows/)
+  - Python3 pip: If not installed with Python, here are the instructions: [https://packaging.python.org/en/latest/tutorials/installing-packages/#requirements-for-installing-packages](https://packaging.python.org/en/latest/tutorials/installing-packages/#requirements-for-installing-packages)
 
-:bulb: All in one (Linux only): `sudo apt install openocd python3 python3-pip python3-tk` 
-
+#### MacOs
+  Untested, but certainly identical to Linux.
+  
 ### :snake: Python
   - [virtual-env](https://docs.python-guide.org/dev/virtualenvs/#lower-level-virtualenv): `pip install virtualenv` _(optionnal)_
-  - [PySimpleGUI](https://pysimplegui.readthedocs.io/en/latest/): `pip install pysimplegui`
+  - [Tkinter](https://docs.python.org/fr/3/library/tkinter.html): `pip install tkinter` 
   - [psutil](https://psutil.readthedocs.io/en/latest/): `pip install psutil`
 
 :bulb: You can install everything (virtual env include), with the `install.sh` script  (Linux only).
