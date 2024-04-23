@@ -19,6 +19,7 @@
     - [:computer: Software](#computer-software)
   - [Test files](#test-files)
     - [`test-l475.bin`](#test-l475bin)
+    - [`test-wb55.bin`](#test-wb55bin)
 
 ## Introduction
 This tools is for internal usage, we use it to load daplink on target (STM32L475, STM32WB55, ...), to replace ST-LINK.
@@ -46,7 +47,7 @@ With OpenOCD, the program steps are :
 
 #### Windows
   - [OpenOCD](https://openocd.org/): 
-      - Download lastest release form [https://github.com/openocd-org/openocd/releases/latest](https://github.com/openocd-org/openocd/releases/latest)  
+      - Download lastest release from [https://github.com/openocd-org/openocd/releases/latest](https://github.com/openocd-org/openocd/releases/latest)  
       - add the `bin` folder to your [path](https://www.architectryan.com/2018/03/17/add-to-the-path-on-windows-10/) (e.g `C:/openOCD/bin`).
   - Python 3.x: Download it from [https://www.python.org/downloads/windows/](https://www.python.org/downloads/windows/)
   - Python3 pip: If not installed with Python, here are the instructions: [https://packaging.python.org/en/latest/tutorials/installing-packages/#requirements-for-installing-packages](https://packaging.python.org/en/latest/tutorials/installing-packages/#requirements-for-installing-packages)
@@ -56,7 +57,7 @@ With OpenOCD, the program steps are :
   
 ### :snake: Python
   - [virtual-env](https://docs.python-guide.org/dev/virtualenvs/#lower-level-virtualenv): `pip install virtualenv` _(optionnal)_
-  - [Tkinter](https://docs.python.org/fr/3/library/tkinter.html): `pip install tkinter` 
+  - [Tkinter](https://docs.python.org/fr/3/library/tkinter.html): `pip install tk` 
   - [psutil](https://psutil.readthedocs.io/en/latest/): `pip install psutil`
 
 :bulb: You can install everything (virtual env include), with the `install.sh` script  (Linux only).
@@ -112,3 +113,7 @@ In the `test bin` folder, you can find some simple programs for targets.
 ### `test-l475.bin`
 It blinks the LEDs, `LD1` and `LD2`, in two different patterns.  
 ![](doc/test_l475.gif)
+
+### `test-wb55.bin`
+Toggles between high and low states of pins `PC10` and `PC12`.  (The video is the result on the STeaMi board).  
+![](doc/test_steami.gif)
