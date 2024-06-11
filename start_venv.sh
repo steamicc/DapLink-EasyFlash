@@ -1,5 +1,3 @@
 #!/bin/bash
 
-source ./venv/bin/activate
-python3 easy_daplink.py
-deactivate
+venv/bin/python3 easy_daplink.py

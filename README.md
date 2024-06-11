@@ -92,7 +92,7 @@ _Soon..._ ;)
 The program offer a simple GUI interface to select the bootload and the firmware that will be flashed on the STM32F1x.
 
   1. Launch the script `easy_daplink.py` file (e.g `python3 easy_daplink.py`)  
-      _If you are using a virtual env activate it with `source venv/bin/activate`, or you can start the program with `start_venv.sh` (Linux only)_
+      _If you're using a virtual environment, you can launch it with python in the `venv/bin/` directory (for example: `venv/bin/python3 easy_daplink.py`), or you can start the program with `start_venv.sh` (Linux only)_.
   2. Select the `script` folder of OpenOCD (e.g On Linux : `/usr/share/openocd/scripts/`)
   3. Select files you downloaded from [requirements](#floppy_disk-bootloader--firmware)
      1. The bootloader binary file to flash (e.g: `stm32f103xb_bl.bin`)
