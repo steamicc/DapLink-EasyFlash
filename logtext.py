@@ -28,8 +28,8 @@ class LogText(tk.Text):
             final_msg = text
 
         super().insert(tk.END, final_msg, type)
-        super().see(tk.END)
         self.configure(state=tk.DISABLED)
+        super().see("end")
 
     def log_error(self, text: str, print_time: bool = True, add_newline: bool = True):
         if add_newline :
