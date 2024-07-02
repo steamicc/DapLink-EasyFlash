@@ -16,6 +16,7 @@ class LogText(tk.Text):
         self.tag_configure(LogType.INFO, foreground="#000000")
         self.tag_configure(LogType.WARNING, foreground="#FFB54C")
         self.tag_configure(LogType.ERROR, foreground="#FF6961")
+        self.configure(state=tk.DISABLED)
 
     def log(self, type: LogType, text: str, print_time: bool = True):
         final_msg = ""
