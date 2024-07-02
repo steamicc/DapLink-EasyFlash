@@ -46,7 +46,7 @@ GRID_PADS = {'padx': '4px', 'pady': '2px'}
 MAIN_PADS = {'padx': '4px', 'pady': '2px'}
 
 settings = Settings("settings.dat")
-window = tk.Tk()
+window = tk.Tk(className='Easy Flash DapLink')
 window.title("Easy Flash DapLink")
 
 
@@ -126,7 +126,7 @@ def main():
     log_text = LogText(master=layout_log, yscrollcommand=text_scroll_v.set)
 
     text_scroll_v.config(command=log_text.yview)
-    log_text.pack(fill=tk.BOTH)
+    log_text.pack(fill=tk.BOTH, expand=True)
 
     ###
     # Pack the layout
@@ -134,7 +134,7 @@ def main():
     layout_files.pack(fill=tk.X, **MAIN_PADS)
     layout_params.pack(fill=tk.X, **MAIN_PADS)
     ttk.Button(master=window, style='Accent.TButton', text="Flash DAPLink", command=run_flash).pack(fill=tk.X, **MAIN_PADS)
-    layout_log.pack(fill=tk.BOTH, **MAIN_PADS)
+    layout_log.pack(fill=tk.BOTH, expand=True, **MAIN_PADS)
 
     sys.stdout.write = redirector_stdout
     sys.stderr.write = redirector_stderr
