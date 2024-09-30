@@ -1,0 +1,10 @@
+[package]
+name = "easy_flash_daplink"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+iced = "0.13.1"
+iced_aw = { version = "0.11.0", default-features = false, features = ["grid", "number_input"] }
+rfd = { version = "0.15.0", default-features = false, features = ["gtk3"] }
+

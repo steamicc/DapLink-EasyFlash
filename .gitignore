@@ -3,3 +3,7 @@ settings.dat
 
 __pycache__/
 venv/
+
+# Added by cargo
+
+/target
