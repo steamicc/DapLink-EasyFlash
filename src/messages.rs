@@ -15,4 +15,6 @@ pub enum Message {
 
     TimeoutChanged(u32),
     TargetNameChanged(String),
+
+    StartProcess,
 }
