@@ -77,14 +77,14 @@ To allow the program flash the DapLink bootloader, the DapLink firmware, then th
 Here are somes schematics, to show you how to plug probes to the board.
 
 ##### STLink V2 (or clones)
-![](doc/wiring_l475_stlinkv2.png "Wirring with the STLink V2 (or clones)")
+![](doc/wiring_l475_stlinkv2.png "Wiring with the STLink V2 (or clones)")
 
 ##### Black Magic Probe (V2.1 in this picture)
-![](doc/wiring_l475_bmp.png "Wirring with the Black Magick probe (V2.1 in the picture)")
+![](doc/wiring_l475_bmp.png "Wiring with the Black Magick probe (V2.1 in the picture)")
 
 ##### Nucleo's STLink  
 :warning: Remove both jumper `CN2` (orange rectangle) before flashing anything. Then **replace** them when you are finished.
-![](doc/wiring_l475_nucleo.png "Wirring this the nucleo's STLink")
+![](doc/wiring_l475_nucleo.png "Wiring this the nucleo's STLink")
 
 #### STM32 Nucleo WB55
 ![](doc/wiring_stlink_nucleo.png "Wiring Nucleo WB55")
