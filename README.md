@@ -16,6 +16,7 @@
         - [Black Magic Probe (V2.1 in this picture)](#black-magic-probe-v21-in-this-picture)
         - [Nucleo's STLink](#nucleos-stlink)
       - [STM32 Nucleo WB55](#stm32-nucleo-wb55)
+      - [STeaMi](#steami)
     - [:computer: Software](#computer-software)
   - [Test files](#test-files)
     - [`test-l475.bin`](#test-l475bin)
@@ -86,7 +87,11 @@ Here are somes schematics, to show you how to plug probes to the board.
 ![](doc/wiring_l475_nucleo.png "Wirring this the nucleo's STLink")
 
 #### STM32 Nucleo WB55
-_Soon..._ ;)
+![](doc/wiring_stlink_nucleo.png "Wiring Nucleo WB55")
+
+#### STeaMi
+⚠️ The STeaMi also need to be connect to the computer (with the micro-USB cable).
+![](doc/wiring_stlink_steami.png "Wiring STeaMi")
 
 ### :computer: Software
 The program offer a simple GUI interface to select the bootload and the firmware that will be flashed on the STM32F1x.
