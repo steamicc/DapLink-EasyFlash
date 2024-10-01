@@ -1,24 +1,32 @@
 use std::{path::PathBuf, str::FromStr};
 
 use iced::{
-    widget::{button, column, row, text_input},
-    Element, Length, Task,
+    alignment::Horizontal,
+    widget::{
+        button, center, column, container, opaque, row, stack, text, text_editor, text_input,
+    },
+    Element, Font, Length, Task, Theme,
 };
 use iced_aw::{grid, grid_row, number_input};
-use rfd::AsyncFileDialog;
 
-use crate::messages::Message;
+use crate::{
+    log_widget::{LogType, LogWidget},
+    messages::Message,
+    utils,
+};
 
 const TIMEOUT_MIN: u32 = 100;
 const TIMEOUT_MAX: u32 = 10000;
 
 pub struct EasyDapLink {
-    is_file_dialog_open: bool,
+    theme: Theme,
+    is_readonly: bool,
     bootloader_path: PathBuf,
     firmware_path: PathBuf,
     user_file_path: PathBuf,
     target_waiting_time: u32,
     target_name: String,
+    log_widget: LogWidget,
 }
 
 impl EasyDapLink {
@@ -26,49 +34,42 @@ impl EasyDapLink {
         "Easy Flash DAPLink".to_owned()
     }
 
+    pub fn theme(&self) -> Theme {
+        self.theme.clone()
+    }
+
     pub fn update(&mut self, message: Message) -> Task<Message> {
         match message {
             Message::BrowseBootloader => {
-                if !self.is_file_dialog_open {
-                    self.is_file_dialog_open = true;
+                self.is_readonly = true;
 
-                    return Task::perform(
-                        Self::select_file(
-                            self.bootloader_path.clone(),
-                            "Select Bootloader file",
-                            false,
-                        ),
-                        Message::SelectBootloader,
-                    );
-                }
+                return Task::perform(
+                    utils::select_file(
+                        self.bootloader_path.clone(),
+                        "Select Bootloader file",
+                        false,
+                    ),
+                    Message::SelectBootloader,
+                );
             }
             Message::BrowseFirmware => {
-                if !self.is_file_dialog_open {
-                    self.is_file_dialog_open = true;
+                self.is_readonly = true;
 
-                    return Task::perform(
-                        Self::select_file(
-                            self.firmware_path.clone(),
-                            "Select Firmware file",
-                            false,
-                        ),
-                        Message::SelectFirmware,
-                    );
-                }
+                return Task::perform(
+                    utils::select_file(self.firmware_path.clone(), "Select Firmware file", false),
+                    Message::SelectFirmware,
+                );
             }
             Message::BrowseUserFile => {
-                if !self.is_file_dialog_open {
-                    self.is_file_dialog_open = true;
-
-                    return Task::perform(
-                        Self::select_file(
-                            self.user_file_path.clone(),
-                            "Select user program file",
-                            true,
-                        ),
-                        Message::SelectUserFile,
-                    );
-                }
+                self.is_readonly = true;
+                return Task::perform(
+                    utils::select_file(
+                        self.user_file_path.clone(),
+                        "Select user program file",
+                        true,
+                    ),
+                    Message::SelectUserFile,
+                );
             }
 
             Message::SelectBootloader(p) => {
@@ -77,7 +78,7 @@ impl EasyDapLink {
                     None => (),
                 };
 
-                self.is_file_dialog_open = false;
+                self.is_readonly = false;
             }
 
             Message::SelectFirmware(p) => {
@@ -85,7 +86,7 @@ impl EasyDapLink {
                     Some(p) => self.firmware_path = p,
                     None => (),
                 };
-                self.is_file_dialog_open = false;
+                self.is_readonly = false;
             }
 
             Message::SelectUserFile(p) => {
@@ -93,7 +94,7 @@ impl EasyDapLink {
                     Some(p) => self.user_file_path = p,
                     None => (),
                 };
-                self.is_file_dialog_open = false;
+                self.is_readonly = false;
             }
 
             Message::InputBootloaderPath(s) => {
@@ -107,6 +108,10 @@ impl EasyDapLink {
             }
 
             Message::TargetNameChanged(s) => self.target_name = s,
+
+            Message::StartProcess => {
+                self.validate_fields();
+            }
         }
 
         Task::none()
@@ -153,7 +158,7 @@ impl EasyDapLink {
         )
         .width(Length::Fill)
         .column_spacing(8)
-        .row_spacing(16)
+        .row_spacing(8)
         .column_widths(&[Length::Shrink, Length::Fill])
         .padding(8);
 
@@ -177,51 +182,81 @@ impl EasyDapLink {
         )
         .width(Length::Fill)
         .column_spacing(8)
-        .row_spacing(16)
+        .row_spacing(8)
         .column_widths(&[Length::Shrink, Length::Fill])
         .padding(8);
 
-        column![grid_files, grid_settings]
-            .spacing(32)
-            .padding(8)
-            .into()
+        let start_button = button(
+            text("Start 🚀")
+                .shaping(text::Shaping::Advanced)
+                .width(Length::Fill)
+                .align_x(Horizontal::Center),
+        )
+        .width(Length::Fill)
+        .on_press(Message::StartProcess);
+
+        let log_view = container(self.log_widget.view())
+            .height(Length::Fill)
+            .width(Length::Fill);
+
+        let final_view = if self.is_readonly {
+            column![
+                stack![
+                    column![grid_files, grid_settings, start_button].spacing(16),
+                    opaque(center(text("")).style(|theme: &Theme| {
+                        let mut bg = theme.palette().background;
+                        bg.a = 0.8;
+                        container::Style {
+                            background: Some(bg.into()),
+                            ..container::Style::default()
+                        }
+                    }))
+                ],
+                log_view
+            ]
+        } else {
+            column![grid_files, grid_settings, start_button, log_view]
+        };
+
+        final_view.spacing(16).padding(8).into()
     }
 
-    async fn select_file(current: PathBuf, title: &str, allow_hex: bool) -> Option<PathBuf> {
-        let mut dialog = AsyncFileDialog::new()
-            .set_title(title)
-            .add_filter("Binary file (*.bin)", &["bin", "BIN"]);
-
-        if allow_hex {
-            dialog = dialog.add_filter("Hex file (*.hex)", &["hex", "HEX"]);
+    fn validate_fields(&mut self) -> bool {
+        if !self.bootloader_path.exists() {
+            self.log_widget.push(LogType::Error(
+                "Invalide bootloader file (no such file or directory)".to_owned(),
+            ));
+            return false;
         }
 
-        dialog = dialog.add_filter("All file", &["*"]);
-
-        if current.exists() {
-            if current.is_dir() {
-                dialog = dialog.set_directory(current);
-            } else {
-                match current.parent() {
-                    Some(p) => dialog = dialog.set_directory(p),
-                    None => (),
-                };
-            }
+        if !self.firmware_path.exists() {
+            self.log_widget.push(LogType::Error(
+                "Invalide firmware file (no such file or directory)".to_owned(),
+            ));
+            return false;
         }
 
-        dialog.pick_file().await.map(|h| h.path().to_path_buf())
+        if !self.bootloader_path.exists() && !self.user_file_path.to_str().unwrap().is_empty() {
+            self.log_widget.push(LogType::Warning(
+                "Invalide user file (no such file or directory).".to_owned(),
+            ));
+        }
+
+        true
     }
 }
 
 impl Default for EasyDapLink {
     fn default() -> Self {
         Self {
-            is_file_dialog_open: false,
+            theme: Theme::default(),
+            is_readonly: false,
             bootloader_path: PathBuf::default(),
             firmware_path: PathBuf::default(),
             user_file_path: PathBuf::default(),
             target_waiting_time: 1000,
-            target_name: "STeaMi".to_owned(),
+            target_name: String::default(),
+            log_widget: LogWidget::default(),
         }
     }
 }
