@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use crate::log_entries::LogEntries;
+use crate::ProcessResult;
 
 #[derive(Debug, Clone)]
 pub enum Message {
@@ -15,12 +15,12 @@ pub enum Message {
     InputFirmwarePath(String),
     InputUserFilePath(String),
 
-    TimeoutChanged(u32),
+    TimeoutChanged(u64),
     TargetNameChanged(String),
 
     StartProcess,
     DoneProcess,
-    DoneEraseProcess(Result<(Option<i32>, LogEntries), String>),
-    DoneFlashProcess(Result<(Option<i32>, LogEntries), String>),
-    DoneUnlockProcess(Result<(Option<i32>, LogEntries), String>),
+    DoneEraseProcess(Result<ProcessResult, String>),
+    DoneFlashProcess(Result<ProcessResult, String>),
+    DoneUnlockProcess(Result<ProcessResult, String>),
 }
