@@ -1,12 +1,14 @@
 use iced::{
     widget::{scrollable, Column, Text},
-    Color, Element, Font, Length,
+    Color, Element, Font, Length, Pixels,
 };
 
 use crate::{
     log_entries::{LogEntries, LogType},
     messages::Message,
 };
+
+const TEXT_SIZE: u16 = 12;
 
 #[derive(Default)]
 pub struct LogWidget {
@@ -29,19 +31,21 @@ impl LogWidget {
             .log
             .as_deque()
             .iter()
-            .map(|entry| match entry {
-                LogType::Info(s) => Text::new(format!("[INFO] {s}"))
-                    .color(Color::from_rgb8(0, 0, 0))
+            .map(|entry| {
+                let entry: Text = match entry {
+                    LogType::Info(s) => Text::new(format!("[INFO] {s}")),
+                    LogType::InfoNoPrefix(s) => Text::new(s.clone()),
+                    LogType::Warning(s) => {
+                        Text::new(format!("[WARN] {s}")).color(Color::from_rgb8(0xAB, 0x69, 0))
+                    }
+                    LogType::Error(s) => {
+                        Text::new(format!("[ERR] {s}")).color(Color::from_rgb8(0xAA, 0, 0))
+                    }
+                };
+                entry
+                    .size(Pixels::from(TEXT_SIZE))
                     .font(Font::MONOSPACE)
-                    .into(),
-                LogType::Warning(s) => Text::new(format!("[WARN] {s}"))
-                    .color(Color::from_rgb8(0xAB, 0x69, 0))
-                    .font(Font::MONOSPACE)
-                    .into(),
-                LogType::Error(s) => Text::new(format!("[ERR] {s}"))
-                    .color(Color::from_rgb8(0xAA, 0, 0))
-                    .font(Font::MONOSPACE)
-                    .into(),
+                    .into()
             })
             .collect();
 
