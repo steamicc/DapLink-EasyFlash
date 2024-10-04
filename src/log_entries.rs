@@ -5,6 +5,7 @@ use std::{
 
 #[derive(Debug, Clone)]
 pub enum LogType {
+    InfoNoPrefix(String),
     Info(String),
     Warning(String),
     Error(String),
