@@ -28,8 +28,4 @@ impl LogEntries {
     pub fn as_deque(&self) -> Ref<VecDeque<LogType>> {
         self.entries.borrow()
     }
-
-    pub fn clear(&self) {
-        self.entries.borrow_mut().clear();
-    }
 }
