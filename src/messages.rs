@@ -23,4 +23,9 @@ pub enum Message {
     DoneEraseProcess(Result<ProcessResult, String>),
     DoneFlashProcess(Result<ProcessResult, String>),
     DoneUnlockProcess(Result<ProcessResult, String>),
+
+    DoneWaitMaintenanceDisk(bool),
+    DoneCopyFirmware(Result<(), String>),
+    DoneWaitingDeviceDisk(bool),
+    DoneCopyUserfile(Result<(), String>),
 }
