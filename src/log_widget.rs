@@ -1,29 +1,33 @@
 use iced::{
-    widget::{column, scrollable, text, Column, Text},
+    widget::{scrollable, Column, Text},
     Color, Element, Font, Length,
 };
 
-use crate::messages::Message;
-
-pub enum LogType {
-    Info(String),
-    Warning(String),
-    Error(String),
-}
+use crate::{
+    log_entries::{LogEntries, LogType},
+    messages::Message,
+};
 
 #[derive(Default)]
 pub struct LogWidget {
-    entries: Vec<LogType>,
+    log: LogEntries,
 }
 
 impl LogWidget {
     pub fn push(&mut self, entry: LogType) {
-        self.entries.push(entry);
+        self.log.push(entry);
+    }
+
+    pub fn from_log_entries(&mut self, log: &LogEntries) {
+        while let Some(entry) = log.pop() {
+            self.log.push(entry);
+        }
     }
 
     pub fn view(&self) -> Element<Message> {
         let iter: Vec<Element<Message>> = self
-            .entries
+            .log
+            .as_deque()
             .iter()
             .map(|entry| match entry {
                 LogType::Info(s) => Text::new(format!("[INFO] {s}"))
@@ -40,6 +44,8 @@ impl LogWidget {
                     .into(),
             })
             .collect();
+
+        self.log.clear();
 
         scrollable(Column::with_children(iter))
             .anchor_bottom()
