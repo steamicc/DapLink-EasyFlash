@@ -45,8 +45,6 @@ impl LogWidget {
             })
             .collect();
 
-        self.log.clear();
-
         scrollable(Column::with_children(iter))
             .anchor_bottom()
             .height(Length::Fill)
