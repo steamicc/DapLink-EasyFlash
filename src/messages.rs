@@ -1,5 +1,7 @@
 use std::path::PathBuf;
 
+use crate::log_entries::LogEntries;
+
 #[derive(Debug, Clone)]
 pub enum Message {
     BrowseBootloader,
@@ -17,4 +19,8 @@ pub enum Message {
     TargetNameChanged(String),
 
     StartProcess,
+    DoneProcess,
+    DoneEraseProcess(Result<(Option<i32>, LogEntries), String>),
+    DoneFlashProcess(Result<(Option<i32>, LogEntries), String>),
+    DoneUnlockProcess(Result<(Option<i32>, LogEntries), String>),
 }
