@@ -1,5 +1,7 @@
 use std::path::PathBuf;
 
+use iced::Event;
+
 use crate::ProcessResult;
 
 #[derive(Debug, Clone)]
@@ -28,4 +30,6 @@ pub enum Message {
     DoneCopyFirmware(Result<(), String>),
     DoneWaitingDeviceDisk(bool),
     DoneCopyUserfile(Result<(), String>),
+
+    ApplicationEvent(Event),
 }
