@@ -43,5 +43,7 @@ fn main() -> iced::Result {
             }),
             ..Default::default()
         })
+        .subscription(EasyDapLink::application_subscription)
+        .exit_on_close_request(false)
         .run()
 }
