@@ -37,7 +37,24 @@ pub fn get_tmp_dir() -> Result<PathBuf, String> {
         match fs::create_dir_all(&tmp) {
             Ok(_) => (),
             Err(e) => {
-                return Err(format!("Failed to create script directory {e}"));
+                return Err(format!("Failed to create tmp directory {e}"));
+            }
+        }
+    }
+
+    Ok(tmp)
+}
+
+pub fn get_settings_dir() -> Result<PathBuf, String> {
+    let base = get_base_dir()?;
+
+    let tmp = base.join("settings");
+
+    if !tmp.exists() && fs::create_dir_all(&tmp).is_err() {
+        match fs::create_dir_all(&tmp) {
+            Ok(_) => (),
+            Err(e) => {
+                return Err(format!("Failed to create settings directory {e}"));
             }
         }
     }
