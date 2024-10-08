@@ -1,28 +1,40 @@
-use std::{fmt::format, path::PathBuf, str::FromStr, time::Duration};
+use std::{fs, path::PathBuf, str::FromStr, time::Duration};
 
 use iced::{
+    advanced::graphics::futures::event,
     alignment::Horizontal,
     widget::{button, center, column, container, opaque, row, stack, text, text_input},
-    Element, Length, Task, Theme,
+    Element, Event, Length, Subscription, Task, Theme,
 };
 use iced_aw::{grid, grid_row, number_input};
+use serde::{Deserialize, Serialize};
 
 use crate::{
-    disk_tool, log_entries::LogType, log_widget::LogWidget, messages::Message, open_ocd_task, utils,
+    dirs, disk_tool, log_entries::LogType, log_widget::LogWidget, messages::Message, open_ocd_task,
+    utils,
 };
 
 const MAINTENANCE_DISK_NAME: &str = "MAINTENANCE";
 const TIMEOUT_MIN: u64 = 1;
 const TIMEOUT_MAX: u64 = 30;
 
+fn default_target_waiting_time() -> u64 {
+    10
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct EasyDapLink {
+    #[serde(skip)]
     theme: Theme,
+    #[serde(skip)]
     is_readonly: bool,
     bootloader_path: PathBuf,
     firmware_path: PathBuf,
     user_file_path: PathBuf,
+    #[serde(default = "default_target_waiting_time")]
     target_waiting_time: u64,
     target_name: String,
+    #[serde(skip)]
     log_widget: LogWidget,
 }
 
@@ -322,6 +334,31 @@ impl EasyDapLink {
                 self.log_widget.push(LogType::InfoNoPrefix("\n\n".into()));
                 return Task::done(Message::DoneProcess);
             }
+
+            Message::ApplicationEvent(event) => {
+                match event {
+                    Event::Keyboard(_) | Event::Mouse(_) | Event::Touch(_) => (),
+                    Event::Window(event) => match event {
+                        iced::window::Event::CloseRequested => {
+                            match dirs::get_settings_dir() {
+                                Ok(settings_dir) => {
+                                    let fields_file = settings_dir.join("fields.json");
+                                    match fs::write(
+                                        fields_file,
+                                        serde_json::to_string_pretty(&self).unwrap_or("{}".into()),
+                                    ) {
+                                        Ok(_) => println!("Fields succesfully saved"),
+                                        Err(e) => eprintln!("Failed to save fields ({e})"),
+                                    }
+                                }
+                                Err(e) => eprintln!("Failed to get settings dirs (Error: {e}"),
+                            };
+                            return iced::window::get_latest().and_then(iced::window::close);
+                        }
+                        _ => (),
+                    },
+                };
+            }
         }
 
         Task::none()
@@ -431,6 +468,10 @@ impl EasyDapLink {
         final_view.spacing(16).padding(8).into()
     }
 
+    pub fn application_subscription(&self) -> Subscription<Message> {
+        event::listen().map(Message::ApplicationEvent)
+    }
+
     fn validate_fields(&mut self) -> bool {
         if !self.bootloader_path.exists() {
             self.log_widget.push(LogType::Error(
@@ -454,11 +495,29 @@ impl EasyDapLink {
 
         true
     }
+
+    fn load_fields() -> Option<Self> {
+        match dirs::get_settings_dir() {
+            Ok(settings_dir) => {
+                let fields_file = settings_dir.join("fields.json");
+                match fs::read_to_string(fields_file) {
+                    Ok(str) => match serde_json::from_str(&str) {
+                        Ok(object) => return Some(object),
+                        Err(e) => eprintln!("Failed to load fields ({e})"),
+                    },
+                    Err(e) => eprintln!("Failed to read fields file ({e})"),
+                }
+            }
+            Err(e) => eprintln!("Failed to get settings dirs (Error: {e}"),
+        };
+
+        None
+    }
 }
 
 impl Default for EasyDapLink {
     fn default() -> Self {
-        Self {
+        let mut object = Self {
             theme: Theme::default(),
             is_readonly: false,
             bootloader_path: PathBuf::default(),
@@ -467,6 +526,19 @@ impl Default for EasyDapLink {
             target_waiting_time: 10,
             target_name: String::default(),
             log_widget: LogWidget::default(),
+        };
+
+        match Self::load_fields() {
+            Some(saved) => {
+                object.bootloader_path = saved.bootloader_path;
+                object.firmware_path = saved.firmware_path;
+                object.user_file_path = saved.user_file_path;
+                object.target_name = saved.target_name;
+                object.target_waiting_time = saved.target_waiting_time;
+            }
+            None => (),
         }
+
+        object
     }
 }
