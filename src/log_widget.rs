@@ -10,7 +10,7 @@ use crate::{
 
 const TEXT_SIZE: u16 = 12;
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct LogWidget {
     log: LogEntries,
 }
