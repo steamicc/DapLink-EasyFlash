@@ -59,7 +59,7 @@ DapLink bootloaders and firmwares can be found at [https://github.com/letssteam/
 ### :electric_plug: Hardware
 To allow the program flash the DapLink bootloader, the DapLink firmware, then the test program (optional), it's important to wiring you board.
 
-**Note**: Connect the target (STM32 Disco L475 IoTNode, STM32 Nucleo WB55, ...) to your computer **after** wiring and connecting the probe to your computer
+:warning: **Connect the target** (STM32 Disco L475 IoTNode, STM32 Nucleo WB55, ...) to your computer **after** wiring and **connecting the probe** to your computer
 
 #### STM32 Disco L475 IoTNode
 Here are somes schematics, to show you how to plug probes to the board.
@@ -78,7 +78,6 @@ Here are somes schematics, to show you how to plug probes to the board.
 ![](doc/wiring_stlink_nucleo.png "Wiring Nucleo WB55")
 
 #### STeaMi
-⚠️ The STeaMi also need to be connect to the computer (with the micro-USB cable).
 ![](doc/wiring_stlink_steami.png "Wiring STeaMi")
 
 ### :computer: Software
