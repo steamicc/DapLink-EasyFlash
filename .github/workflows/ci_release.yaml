@@ -1,0 +1,40 @@
+name: CI & Release
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+        - main
+    tags:  
+        - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  ci_release:
+    name: "C.I and Release (only for tags)"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install packages
+        run: sudo apt install libatk1.0-dev pkg-config libgtk-3-dev
+      - name: Install Rust
+        run: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+      - name: Install cross
+        run: cargo install cross
+      - name: Build ubuntu version
+        run: cargo build --release --locked
+      - name: Build Windows version (with cross)
+        run: cross build --target x86_64-pc-windows-gnu --release --locked
+        
+      # only generate release if push on tags
+      - name: Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          prerelease: false
+          make_latest: true
+          files: |
+              target/release/easy_flash_daplink
+              target/x86_64-pc-windows-gnu/release/easy_flash_daplink.exe
