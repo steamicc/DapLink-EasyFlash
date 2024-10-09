@@ -7,7 +7,6 @@
       - [Linux](#linux)
       - [Windows](#windows)
       - [MacOs](#macos)
-    - [:snake: Python](#snake-python)
     - [:floppy\_disk: Bootloader \& Firmware](#floppy_disk-bootloader--firmware)
   - [Usage](#usage)
     - [:electric\_plug: Hardware](#electric_plug-hardware)
@@ -18,6 +17,7 @@
       - [STM32 Nucleo WB55](#stm32-nucleo-wb55)
       - [STeaMi](#steami)
     - [:computer: Software](#computer-software)
+    - [:crab: Run from sources](#crab-run-from-sources)
   - [Test files](#test-files)
     - [`test-l475.bin`](#test-l475bin)
     - [`test-wb55.bin`](#test-wb55bin)
@@ -32,7 +32,8 @@ With OpenOCD, the program steps are :
   4. Send firmware
   5. _(optionnal)_ Send test program 
 
-![](doc/screenshot.png)
+![screenshot](doc/screenshot.png)
+_Appearance may vary depending on your **OS** configuration._
 
 
 
@@ -41,27 +42,14 @@ With OpenOCD, the program steps are :
 ### :computer: System
 #### Linux
  - [OpenOCD](https://openocd.org/): `sudo apt install openocd`
- - Python 3.x: `sudo apt install python3`
- - Python3 pip: `sudo apt install python3-pip`
-
-:bulb: All in one: `sudo apt install openocd python3 python3-pip` 
 
 #### Windows
   - [OpenOCD](https://openocd.org/): 
       - Download lastest release from [https://github.com/openocd-org/openocd/releases/latest](https://github.com/openocd-org/openocd/releases/latest)  
       - add the `bin` folder to your [path](https://www.architectryan.com/2018/03/17/add-to-the-path-on-windows-10/) (e.g `C:/openOCD/bin`).
-  - Python 3.x: Download it from [https://www.python.org/downloads/windows/](https://www.python.org/downloads/windows/)
-  - Python3 pip: If not installed with Python, here are the instructions: [https://packaging.python.org/en/latest/tutorials/installing-packages/#requirements-for-installing-packages](https://packaging.python.org/en/latest/tutorials/installing-packages/#requirements-for-installing-packages)
 
 #### MacOs
   Untested, but certainly identical to Linux.
-  
-### :snake: Python
-  - [virtual-env](https://docs.python-guide.org/dev/virtualenvs/#lower-level-virtualenv): `pip install virtualenv` _(optionnal)_
-  - [Tkinter](https://docs.python.org/fr/3/library/tkinter.html): `pip install tk` 
-  - [psutil](https://psutil.readthedocs.io/en/latest/): `pip install psutil`
-
-:bulb: You can install everything (virtual env include), with the `install.sh` script  (Linux only).
 
 ### :floppy_disk: Bootloader & Firmware
 DapLink bootloaders and firmwares can be found at [https://github.com/letssteam/DAPLink/releases](https://github.com/letssteam/DAPLink/releases)
@@ -96,21 +84,22 @@ Here are somes schematics, to show you how to plug probes to the board.
 ### :computer: Software
 The program offer a simple GUI interface to select the bootload and the firmware that will be flashed on the STM32F1x.
 
-  1. Launch the script `easy_daplink.py` file (e.g `python3 easy_daplink.py`)  
-      _If you're using a virtual environment, you can launch it with python in the `venv/bin/` directory (for example: `venv/bin/python3 easy_daplink.py`), or you can start the program with `start_venv.sh` (Linux only)_.
-  2. Select the `script` folder of OpenOCD (e.g On Linux : `/usr/share/openocd/scripts/`)
-  3. Select files you downloaded from [requirements](#floppy_disk-bootloader--firmware)
+
+  1. Select files you downloaded from [requirements](#floppy_disk-bootloader--firmware)
      1. The bootloader binary file to flash (e.g: `stm32f103xb_bl.bin`)
      2. The firmware binary file to flash (e.g: `stm32f103xb_stm32l475vg_if.bin`)
      3. _(optionnal)_ The program binary file to flash (you can find test program in `test bin` folder)
-  4. Set the mount point name
-     1. For "Maintenance", after bootloader was flashed (e.g: `MAINTENANCE`)
-     2. For "Programming", after firmware was flashed (e.g: `DIS_L4IOT`, `DAPLINK`, ...)
-  5. Define the timeout mount point waiting (e.g: `10000`), in milliseconds (1000 milliseconds = 1 second)
-  6. Push the "Start" button.
+  2. Set the target mount point name (e.g: `DIS_L4IOT`, `DAPLINK`, `STEAMI`...)
+  3. Define the timeout mount point waiting (e.g: `10`), in seconds
+  4. Push the "Start" button.
 
 :bulb: Pro tips: All inputs are saved for the next time you will open the tool !
 
+
+### :crab: Run from sources
+1. Install [rust](https://www.rust-lang.org/tools/install)
+2. Clone or download this repository
+3. Run `cargo run` from the project root.
 
 ## Test files
 In the `test bin` folder, you can find some simple programs for targets. 
