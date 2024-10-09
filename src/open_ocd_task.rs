@@ -28,8 +28,6 @@ pub async fn unlock_target() -> Result<ProcessResult, String> {
     let mut command = Command::new("openocd");
     command.args(&["-f", &format!("{}", path_script.to_str().unwrap())]);
 
-    println!("{:?}", command.get_args());
-
     Ok(run_command(&mut command).await?)
 }
 
@@ -88,6 +86,9 @@ pub fn create_script_file() -> Result<(), String> {
 
 async fn run_command(cmd: &mut Command) -> Result<ProcessResult, String> {
     let logs = LogEntries::default();
+
+    #[cfg(target_os = "windows")]
+    let cmd = cmd.args(&["-s", "scripts"]);
 
     let mut child = cmd
         .stdout(Stdio::piped())
