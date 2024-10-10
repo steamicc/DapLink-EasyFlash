@@ -69,11 +69,23 @@ jobs:
           mv xpack-openocd-0.12.0-4/bin/* windows/
           mv xpack-openocd-0.12.0-4/openocd/scripts/ windows/
           7z a windows.zip windows/*
+          rm -rf xpack-openocd-0.12.0-4/ xpack-openocd-0.12.0-4-win32-x64.zip
+
+      - name: Create Linux archive /w XPack OpenOCD
+        run: |
+          curl -LO https://github.com/xpack-dev-tools/openocd-xpack/releases/download/v0.12.0-4/xpack-openocd-0.12.0-4-linux-x64.tar.gz
+          tar xzf xpack-openocd-0.12.0-4-linux-x64.tar.gz
+          mkdir linux
+          mv easy_flash_daplink linux/
+          mv xpack-openocd-0.12.0-4/bin/* linux/
+          mv xpack-openocd-0.12.0-4/openocd/scripts/ linux/
+          7z a linux.zip linux/*
+          rm -rf xpack-openocd-0.12.0-4/ xpack-openocd-0.12.0-4-linux-x64.tar.gz
 
       - name: Renanme release file
         run: |
           mv windows.zip easy_flash_daplink-${{github.ref_name}}-windows.zip
-          mv easy_flash_daplink easy_flash_daplink-${{github.ref_name}}-ubuntu
+          mv linux.zip easy_flash_daplink-${{github.ref_name}}-linux.zip
 
       - name: Release
         uses: softprops/action-gh-release@v2
@@ -82,4 +94,4 @@ jobs:
           make_latest: true
           files: |
               easy_flash_daplink-${{github.ref_name}}-windows.zip
-              easy_flash_daplink-${{github.ref_name}}-ubuntu
+              easy_flash_daplink-${{github.ref_name}}-linux.zip
