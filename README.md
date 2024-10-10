@@ -1,13 +1,11 @@
-# Simple DAPLink tool
+# DapLink - EasyFlash
 
-- [Simple DAPLink tool](#simple-daplink-tool)
+English - [Français](README_fr.md)
+
+- [DapLink - EasyFlash](#daplink---easyflash)
   - [Introduction](#introduction)
   - [Requirements](#requirements)
     - [:computer: System](#computer-system)
-      - [OpenOCD](#openocd)
-        - [Linux (Ubuntu)](#linux-ubuntu)
-        - [Windows](#windows)
-        - [MacOs](#macos)
     - [:floppy\_disk: Bootloader \& Firmware](#floppy_disk-bootloader--firmware)
   - [Usage](#usage)
     - [:electric\_plug: Hardware](#electric_plug-hardware)
@@ -23,11 +21,12 @@
     - [`test-l475.bin`](#test-l475bin)
     - [`test-wb55.bin`](#test-wb55bin)
 
+
 ## Introduction
 This tools is for internal usage, we use it to load daplink on target (STM32L475, STM32WB55, ...), to replace ST-LINK.
 
 With OpenOCD, the program steps are :
-  1. Unlock the RDP of the STM32F1x (if needed)
+  1. Unlock the RDP of the STM32F103xB
   2. Mass erase flash
   3. Flash bootloader
   4. Send firmware
@@ -37,33 +36,41 @@ With OpenOCD, the program steps are :
 
 _Appearance may vary depending on your OS configuration._
 
-
-
 ## Requirements
 
 ### :computer: System
-#### [OpenOCD](https://openocd.org/)
-##### Linux (Ubuntu)
-OpenOCD should be available via apt `sudo apt install openocd`. 
+To avoid installing OpenOCD on your computer, we recommend using the pre-built version maintained by [XPack](https://github.com/xpack-dev-tools/openocd-xpack/releases/tag/v0.12.0-4). The tested and compatible version is `v0.12.0-4`.
 
-##### Windows
-To avoid having to declare environment variables, we recommend obtaining a pre-built version of OpenOCD ([XPack](https://github.com/xpack-dev-tools/openocd-xpack/releases/) for example) and organizing files as follows:
-   - OpenOCD **executable and DLLs** in the **same folder** as the DapLink-EasyFlash executable
-   - OpenOCD **scripts** folder in the **same folder** as the DapLink-EasyFlash executable
-
-💡The windows zip archive available in [releases](https://github.com/letssteam/DapLink-EasyFlash/releases) already contains all the files placed where they need to be.
-
-##### MacOs
-Untested, but certainly identical to Linux.
+Once you've downloaded and decompressed the archive corresponding to your OS, move the files/folders as follows (the term _root folder_ refers to the folder where the `easy-flash-daplink-[version]-[os]` executable is located):
+ - **All files** in the `bin` folder must be moved to the root folder.
+ - The `scripts` folder in the `openocd` folder must be moved to the root folder
   
+:bulb: The archives available in [releases](https://github.com/letssteam/DapLink-EasyFlash/releases) already contains all the files placed where they need to be.
+
+:warning: **Mac OS X** is not yet supported, but PRs are welcome :wink:
 
 ### :floppy_disk: Bootloader & Firmware
-DapLink bootloaders and firmwares can be found at [https://github.com/letssteam/DAPLink/releases](https://github.com/letssteam/DAPLink/releases)
+- Bootloader
+  - STM32F103xB: [https://github.com/letssteam/DAPLink/releases/latest/download/stm32f103xb_bl.bin](https://github.com/letssteam/DAPLink/releases/latest/download/stm32f103xb_bl.bin)
 
+- Firmware
+  - STM32L475VG: [https://github.com/letssteam/DAPLink/releases/latest/download/stm32f103xb_stm32l475vg_if.bin
+](https://github.com/letssteam/DAPLink/releases/latest/download/stm32f103xb_stm32l475vg_if.bin
+)  
+  - STM32WB55RG: [https://github.com/letssteam/DAPLink/releases/latest/download/stm32f103xb_stm32wb55rg_if.bin
+](https://github.com/letssteam/DAPLink/releases/latest/download/stm32f103xb_stm32wb55rg_if.bin
+)  
+  - STeaMi: [https://github.com/letssteam/DAPLink/releases/latest/download/stm32f103xb_steami32_if.bin
+](https://github.com/letssteam/DAPLink/releases/latest/download/stm32f103xb_steami32_if.bin
+)
+
+:bulb: Older releases are available here: [https://github.com/letssteam/DAPLink/releases](https://github.com/letssteam/DAPLink/releases)
+
+:warning: For other targets, please go directly to the [DapLink](https://github.com/ARMmbed/DAPLink) GitHub 
 ## Usage
 
 ### :electric_plug: Hardware
-To allow the program flash the DapLink bootloader, the DapLink firmware, then the test program (optional), it's important to wiring you board.
+To enable the program to flash the bootloader, firmware and then the test program, the board must be wired to a probe (ST-Link, Black magic probe, etc.), and connected to the computer (using a micro-USB cable).
 
 :warning: **Connect the target** (STM32 Disco L475 IoTNode, STM32 Nucleo WB55, ...) to your computer **after** wiring and **connecting the probe** to your computer
 
