@@ -4,9 +4,10 @@
   - [Introduction](#introduction)
   - [Requirements](#requirements)
     - [:computer: System](#computer-system)
-      - [Linux](#linux)
-      - [Windows](#windows)
-      - [MacOs](#macos)
+      - [OpenOCD](#openocd)
+        - [Linux (Ubuntu)](#linux-ubuntu)
+        - [Windows](#windows)
+        - [MacOs](#macos)
     - [:floppy\_disk: Bootloader \& Firmware](#floppy_disk-bootloader--firmware)
   - [Usage](#usage)
     - [:electric\_plug: Hardware](#electric_plug-hardware)
@@ -33,23 +34,28 @@ With OpenOCD, the program steps are :
   5. _(optionnal)_ Send test program 
 
 ![screenshot](doc/screenshot.png)
-_Appearance may vary depending on your **OS** configuration._
+
+_Appearance may vary depending on your OS configuration._
 
 
 
 ## Requirements
 
 ### :computer: System
-#### Linux
- - [OpenOCD](https://openocd.org/): `sudo apt install openocd`
+#### [OpenOCD](https://openocd.org/)
+##### Linux (Ubuntu)
+OpenOCD should be available via apt `sudo apt install openocd`. 
 
-#### Windows
-  - [OpenOCD](https://openocd.org/): 
-      - Download lastest release from [https://github.com/openocd-org/openocd/releases/latest](https://github.com/openocd-org/openocd/releases/latest)  
-      - add the `bin` folder to your [path](https://www.architectryan.com/2018/03/17/add-to-the-path-on-windows-10/) (e.g `C:/openOCD/bin`).
+##### Windows
+To avoid having to declare environment variables, we recommend obtaining a pre-built version of OpenOCD ([XPack](https://github.com/xpack-dev-tools/openocd-xpack/releases/) for example) and organizing files as follows:
+   - OpenOCD **executable and DLLs** in the **same folder** as the DapLink-EasyFlash executable
+   - OpenOCD **scripts** folder in the **same folder** as the DapLink-EasyFlash executable
 
-#### MacOs
-  Untested, but certainly identical to Linux.
+💡The windows zip archive available in [releases](https://github.com/letssteam/DapLink-EasyFlash/releases) already contains all the files placed where they need to be.
+
+##### MacOs
+Untested, but certainly identical to Linux.
+  
 
 ### :floppy_disk: Bootloader & Firmware
 DapLink bootloaders and firmwares can be found at [https://github.com/letssteam/DAPLink/releases](https://github.com/letssteam/DAPLink/releases)
@@ -99,6 +105,7 @@ The program offer a simple GUI interface to select the bootload and the firmware
 1. Install [rust](https://www.rust-lang.org/tools/install)
 2. Clone or download this repository
 3. Run `cargo run` from the project root.
+
 
 ## Test files
 In the `test bin` folder, you can find some simple programs for targets. 
