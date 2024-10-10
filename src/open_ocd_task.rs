@@ -87,7 +87,6 @@ pub fn create_script_file() -> Result<(), String> {
 async fn run_command(cmd: &mut Command) -> Result<ProcessResult, String> {
     let logs = LogEntries::default();
 
-    #[cfg(target_os = "windows")]
     let cmd = cmd.args(&["-s", "scripts"]);
 
     let mut child = cmd
