@@ -3,7 +3,7 @@ use std::{fs, path::PathBuf};
 use directories::ProjectDirs;
 
 fn get_base_dir() -> Result<PathBuf, String> {
-    match ProjectDirs::from("eu", "letssteam", "daplink-easyflash") {
+    match ProjectDirs::from("cc", "steami", "daplink-easyflash") {
         Some(b) => Ok(b.data_dir().to_path_buf()),
         None => {
             Err("No valid home directory path could be retrieved from the operating system".into())
