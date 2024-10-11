@@ -9,12 +9,9 @@ English - [Français](README_fr.md)
     - [:floppy\_disk: Bootloader \& Firmware](#floppy_disk-bootloader--firmware)
   - [Usage](#usage)
     - [:electric\_plug: Hardware](#electric_plug-hardware)
-      - [STM32 Disco L475 IoTNode](#stm32-disco-l475-iotnode)
-        - [STLink V2 (or clones)](#stlink-v2-or-clones)
-        - [Black Magic Probe (V2.1 in this picture)](#black-magic-probe-v21-in-this-picture)
-        - [Nucleo's STLink](#nucleos-stlink)
-      - [STM32 Nucleo WB55](#stm32-nucleo-wb55)
       - [STeaMi](#steami)
+      - [STM32 Disco L475 IoTNode](#stm32-disco-l475-iotnode)
+      - [STM32 Nucleo WB55](#stm32-nucleo-wb55)
     - [:computer: Software](#computer-software)
     - [:crab: Run from sources](#crab-run-from-sources)
   - [Test files](#test-files)
@@ -74,24 +71,15 @@ To enable the program to flash the bootloader, firmware and then the test progra
 
 :warning: **Connect the target** (STM32 Disco L475 IoTNode, STM32 Nucleo WB55, ...) to your computer **after** wiring and **connecting the probe** to your computer
 
+#### STeaMi
+![](doc/wiring_stlink_steami.png "Wiring STeaMi")
+
 #### STM32 Disco L475 IoTNode
-Here are somes schematics, to show you how to plug probes to the board.
-
-##### STLink V2 (or clones)
 ![](doc/wiring_l475_stlinkv2.png "Wiring with the STLink V2 (or clones)")
-
-##### Black Magic Probe (V2.1 in this picture)
-![](doc/wiring_l475_bmp.png "Wiring with the Black Magick probe (V2.1 in the picture)")
-
-##### Nucleo's STLink  
-:warning: Remove both jumper `CN2` (orange rectangle) before flashing anything. Then **replace** them when you are finished.
-![](doc/wiring_l475_nucleo.png "Wiring this the nucleo's STLink")
 
 #### STM32 Nucleo WB55
 ![](doc/wiring_stlink_nucleo.png "Wiring Nucleo WB55")
 
-#### STeaMi
-![](doc/wiring_stlink_steami.png "Wiring STeaMi")
 
 ### :computer: Software
 The program offer a simple GUI interface to select the bootload and the firmware that will be flashed on the STM32F1x.

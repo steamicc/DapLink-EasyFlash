@@ -10,11 +10,9 @@
   - [Utilisation](#utilisation)
     - [:electric\_plug: Hardware](#electric_plug-hardware)
       - [STM32 Disco L475 IoTNode](#stm32-disco-l475-iotnode)
-        - [STLink V2 (ou clones)](#stlink-v2-ou-clones)
-        - [Black Magic Probe (V2.1)](#black-magic-probe-v21)
-        - [STLink Nucleo](#stlink-nucleo)
-      - [STM32 Nucleo WB55](#stm32-nucleo-wb55)
       - [STeaMi](#steami)
+        - [STLink V2 (ou clones)](#stlink-v2-ou-clones)
+      - [STM32 Nucleo WB55](#stm32-nucleo-wb55)
     - [:computer: Software](#computer-software)
     - [:crab: Éxécuter à partir des sources](#crab-éxécuter-à-partir-des-sources)
   - [Test files](#test-files)
@@ -75,22 +73,15 @@ Pour permettre au programme de flasher le bootloader, le firmware, puis le progr
 :warning: **Connecter la carte** (STM32 Disco L475 IoTNode, STM32 Nucleo WB55, ...) à votre ordinateur **après** avoir cablé et **connecté la probe**.
 
 #### STM32 Disco L475 IoTNode
-Schémas de cablâge de différentes probes.
-##### STLink V2 (ou clones)
-![](doc/wiring_l475_stlinkv2.png "Wiring with the STLink V2 (or clones)")
-
-##### Black Magic Probe (V2.1)
-![](doc/wiring_l475_bmp.png "Wiring with the Black Magick probe (V2.1 in the picture)")
-
-##### STLink Nucleo  
-:warning: Retirez les deux jumper `CN2` (rectangle orange) avant de lancer le programme. Pensez à les replacer une fois terminé.
-![](doc/wiring_l475_nucleo.png "Wiring this the nucleo's STLink")
-
-#### STM32 Nucleo WB55
-![](doc/wiring_stlink_nucleo.png "Wiring Nucleo WB55")
 
 #### STeaMi
 ![](doc/wiring_stlink_steami.png "Wiring STeaMi")
+
+##### STLink V2 (ou clones)
+![](doc/wiring_l475_stlinkv2.png "Wiring with the STLink V2 (or clones)")
+
+#### STM32 Nucleo WB55
+![](doc/wiring_stlink_nucleo.png "Wiring Nucleo WB55")
 
 ### :computer: Software
 Le programme offre une interface simplifiée, permettant de selectionner les fichiers qui seront utilisés.
