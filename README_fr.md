@@ -42,7 +42,7 @@ Once you've downloaded and decompressed the archive corresponding to your OS, mo
  - **All files** in the `bin` folder must be moved to the root folder.
  - The `scripts` folder in the `openocd` folder must be moved to the root folder
   
-:bulb: The archives available in [releases](https://github.com/letssteam/DapLink-EasyFlash/releases) already contains all the files placed where they need to be.
+:bulb: The archives available in [releases](https://github.com/steamicc/DapLink-EasyFlash/releases) already contains all the files placed where they need to be.
 
 :warning: **Mac OS X** n'est pas supporter, mais nous ouvert aux contributions :wink:
 
@@ -99,7 +99,7 @@ Le programme offre une interface simplifiée, permettant de selectionner les fic
 
 ### :crab: Éxécuter à partir des sources
 1. Installer [rust](https://www.rust-lang.org/tools/install)
-2. Cloner ou télécharger le repository `git clone https://github.com/letssteam/DapLink-EasyFlash.git`
+2. Cloner ou télécharger le repository `git clone https://github.com/steamicc/DapLink-EasyFlash.git`
 3. Entrer dans le dossier `cd DapLink-EasyFlash`
 4. Éxécuter la commande `cargo run` à la racine du projet.
 

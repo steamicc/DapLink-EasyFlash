@@ -42,7 +42,7 @@ Once you've downloaded and decompressed the archive corresponding to your OS, mo
  - **All files** in the `bin` folder must be moved to the root folder.
  - The `scripts` folder in the `openocd` folder must be moved to the root folder
   
-:bulb: The archives available in [releases](https://github.com/letssteam/DapLink-EasyFlash/releases) already contains all the files placed where they need to be.
+:bulb: The archives available in [releases](https://github.com/steamicc/DapLink-EasyFlash/releases) already contains all the files placed where they need to be.
 
 :warning: **Mac OS X** is not yet supported, but PRs are welcome :wink:
 
@@ -98,9 +98,9 @@ The program offer a simple GUI interface to select the bootload and the firmware
 
 ### :crab: Run from sources
 1. Install [rust](https://www.rust-lang.org/tools/install)
-2. Clone or download this repository
-3. Run `cargo run` from the project root.
-
+2. Clone or download this repository `git clone https://github.com/steamicc/DapLink-EasyFlash.git`
+3. Enter in project folder `cd DapLink-EasyFlash`
+4. Run `cargo run` from the project root.
 
 ## Test files
 In the `test bin` folder, you can find some simple programs for targets. 
