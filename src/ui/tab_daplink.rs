@@ -466,23 +466,23 @@ impl TabDaplink {
     }
 
     // TODO Improve fields loading/saving
-    fn load_fields() -> Option<Self> {
-        match dirs::get_settings_dir() {
-            Ok(settings_dir) => {
-                let fields_file = settings_dir.join("fields.json");
-                match fs::read_to_string(fields_file) {
-                    Ok(str) => match serde_json::from_str(&str) {
-                        Ok(object) => return Some(object),
-                        Err(e) => eprintln!("Failed to load fields ({e})"),
-                    },
-                    Err(e) => eprintln!("Failed to read fields file ({e})"),
-                }
-            }
-            Err(e) => eprintln!("Failed to get settings dirs (Error: {e}"),
-        };
+    // fn load_fields() -> Option<Self> {
+    //     match dirs::get_settings_dir() {
+    //         Ok(settings_dir) => {
+    //             let fields_file = settings_dir.join("fields.json");
+    //             match fs::read_to_string(fields_file) {
+    //                 Ok(str) => match serde_json::from_str(&str) {
+    //                     Ok(object) => return Some(object),
+    //                     Err(e) => eprintln!("Failed to load fields ({e})"),
+    //                 },
+    //                 Err(e) => eprintln!("Failed to read fields file ({e})"),
+    //             }
+    //         }
+    //         Err(e) => eprintln!("Failed to get settings dirs (Error: {e}"),
+    //     };
 
-        None
-    }
+    //     None
+    // }
 }
 
 impl Default for TabDaplink {
@@ -497,16 +497,16 @@ impl Default for TabDaplink {
             log_widget: LogWidget::default(),
         };
 
-        match Self::load_fields() {
-            Some(saved) => {
-                object.bootloader_path = saved.bootloader_path;
-                object.firmware_path = saved.firmware_path;
-                object.user_file_path = saved.user_file_path;
-                object.target_name = saved.target_name;
-                object.target_waiting_time = saved.target_waiting_time;
-            }
-            None => (),
-        }
+        // match Self::load_fields() {
+        //     Some(saved) => {
+        //         object.bootloader_path = saved.bootloader_path;
+        //         object.firmware_path = saved.firmware_path;
+        //         object.user_file_path = saved.user_file_path;
+        //         object.target_name = saved.target_name;
+        //         object.target_waiting_time = saved.target_waiting_time;
+        //     }
+        //     None => (),
+        // }
 
         object
     }
