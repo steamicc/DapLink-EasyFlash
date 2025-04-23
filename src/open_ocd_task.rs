@@ -54,8 +54,18 @@ pub async fn flash_target(bin_path: PathBuf) -> Result<ProcessResult, String> {
         Err(e) => return Err(format!("Failed to copy bootloader file ({e}")),
     };
 
+    let tmp_dir_string = dirs::get_tmp_dir()?
+        .into_os_string()
+        .into_string()
+        .map_err(|_| "Failed to convert tmp_dir to string.")?;
+
     let mut command = Command::new("openocd");
-    command.args(&["-f", &format!("{}", path_script.to_str().unwrap())]);
+    command.args(&[
+        "-s",
+        &tmp_dir_string,
+        "-f",
+        &format!("{}", path_script.to_str().unwrap()),
+    ]);
 
     Ok(run_command(&mut command).await?)
 }
