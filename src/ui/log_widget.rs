@@ -3,10 +3,9 @@ use iced::{
     Color, Element, Font, Length, Pixels,
 };
 
-use crate::{
-    log_entries::{LogEntries, LogType},
-    messages::Message,
-};
+use crate::log_entries::{LogEntries, LogType};
+
+use super::messages::Message;
 
 const TEXT_SIZE: u16 = 12;
 

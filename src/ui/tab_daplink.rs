@@ -9,9 +9,11 @@ use iced::{
 use iced_aw::{grid, grid_row, number_input};
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    dirs, disk_tool, log_entries::LogType, log_widget::LogWidget, messages::Message, open_ocd_task,
-    utils,
+use crate::{dirs, disk_tool, log_entries::LogType, open_ocd_task, utils};
+
+use super::{
+    log_widget::LogWidget,
+    messages::{Message, TabDaplinkMessage},
 };
 
 const MAINTENANCE_DISK_NAME: &str = "MAINTENANCE";
@@ -23,7 +25,7 @@ fn default_target_waiting_time() -> u64 {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct EasyDapLink {
+pub struct TabDaplink {
     #[serde(skip)]
     theme: Theme,
     #[serde(skip)]
@@ -38,18 +40,10 @@ pub struct EasyDapLink {
     log_widget: LogWidget,
 }
 
-impl EasyDapLink {
-    pub fn title(&self) -> String {
-        "Easy Flash DAPLink".to_owned()
-    }
-
-    pub fn theme(&self) -> Theme {
-        self.theme.clone()
-    }
-
-    pub fn update(&mut self, message: Message) -> Task<Message> {
+impl TabDaplink {
+    pub fn update(&mut self, message: TabDaplinkMessage) -> Task<Message> {
         match message {
-            Message::BrowseBootloader => {
+            TabDaplinkMessage::BrowseBootloader => {
                 self.is_readonly = true;
 
                 return Task::perform(
@@ -58,18 +52,18 @@ impl EasyDapLink {
                         "Select Bootloader file",
                         false,
                     ),
-                    Message::SelectBootloader,
+                    |x| Message::DapLink(TabDaplinkMessage::SelectBootloader(x)),
                 );
             }
-            Message::BrowseFirmware => {
+            TabDaplinkMessage::BrowseFirmware => {
                 self.is_readonly = true;
 
                 return Task::perform(
                     utils::select_file(self.firmware_path.clone(), "Select Firmware file", false),
-                    Message::SelectFirmware,
+                    |x| Message::DapLink(TabDaplinkMessage::SelectFirmware(x)),
                 );
             }
-            Message::BrowseUserFile => {
+            TabDaplinkMessage::BrowseUserFile => {
                 self.is_readonly = true;
                 return Task::perform(
                     utils::select_file(
@@ -77,11 +71,11 @@ impl EasyDapLink {
                         "Select user program file",
                         true,
                     ),
-                    Message::SelectUserFile,
+                    |x| Message::DapLink(TabDaplinkMessage::SelectUserFile(x)),
                 );
             }
 
-            Message::SelectBootloader(p) => {
+            TabDaplinkMessage::SelectBootloader(p) => {
                 match p {
                     Some(p) => self.bootloader_path = p,
                     None => (),
@@ -90,7 +84,7 @@ impl EasyDapLink {
                 self.is_readonly = false;
             }
 
-            Message::SelectFirmware(p) => {
+            TabDaplinkMessage::SelectFirmware(p) => {
                 match p {
                     Some(p) => self.firmware_path = p,
                     None => (),
@@ -98,7 +92,7 @@ impl EasyDapLink {
                 self.is_readonly = false;
             }
 
-            Message::SelectUserFile(p) => {
+            TabDaplinkMessage::SelectUserFile(p) => {
                 match p {
                     Some(p) => self.user_file_path = p,
                     None => (),
@@ -106,19 +100,23 @@ impl EasyDapLink {
                 self.is_readonly = false;
             }
 
-            Message::InputBootloaderPath(s) => {
+            TabDaplinkMessage::InputBootloaderPath(s) => {
                 self.bootloader_path = PathBuf::from_str(&s).unwrap()
             }
-            Message::InputFirmwarePath(s) => self.firmware_path = PathBuf::from_str(&s).unwrap(),
-            Message::InputUserFilePath(s) => self.user_file_path = PathBuf::from_str(&s).unwrap(),
+            TabDaplinkMessage::InputFirmwarePath(s) => {
+                self.firmware_path = PathBuf::from_str(&s).unwrap()
+            }
+            TabDaplinkMessage::InputUserFilePath(s) => {
+                self.user_file_path = PathBuf::from_str(&s).unwrap()
+            }
 
-            Message::TimeoutChanged(v) => {
+            TabDaplinkMessage::TimeoutChanged(v) => {
                 self.target_waiting_time = v.clamp(TIMEOUT_MIN, TIMEOUT_MAX);
             }
 
-            Message::TargetNameChanged(s) => self.target_name = s,
+            TabDaplinkMessage::TargetNameChanged(s) => self.target_name = s,
 
-            Message::StartProcess => {
+            TabDaplinkMessage::StartProcess => {
                 if !self.validate_fields() {
                     return Task::none();
                 }
@@ -142,14 +140,16 @@ impl EasyDapLink {
                 self.log_widget.push(LogType::InfoNoPrefix("\n\n".into()));
                 self.log_widget.push(LogType::Info("Unlock target".into()));
                 self.is_readonly = true;
-                return Task::perform(open_ocd_task::unlock_target(), Message::DoneUnlockProcess);
+                return Task::perform(open_ocd_task::unlock_target(), |x| {
+                    Message::DapLink(TabDaplinkMessage::DoneUnlockProcess(x))
+                });
             }
 
-            Message::DoneProcess => {
+            TabDaplinkMessage::DoneProcess => {
                 self.is_readonly = false;
             }
 
-            Message::DoneUnlockProcess(result) => {
+            TabDaplinkMessage::DoneUnlockProcess(result) => {
                 if result.is_err() {
                     self.log_widget.push(LogType::Error(format!(
                         "Failed to run unlock process. Error: {}",
@@ -165,10 +165,9 @@ impl EasyDapLink {
                             if code == 0 {
                                 self.log_widget.push(LogType::InfoNoPrefix("\n\n".into()));
                                 self.log_widget.push(LogType::Info("Erase target".into()));
-                                return Task::perform(
-                                    open_ocd_task::erase_target(),
-                                    Message::DoneEraseProcess,
-                                );
+                                return Task::perform(open_ocd_task::erase_target(), |x| {
+                                    Message::DapLink(TabDaplinkMessage::DoneEraseProcess(x))
+                                });
                             } else {
                                 self.log_widget
                                     .push(LogType::Warning(format!("Exit code: {}", code)));
@@ -179,9 +178,9 @@ impl EasyDapLink {
                             .push(LogType::Warning("Process terminated by signal.".into())),
                     }
                 }
-                return Task::done(Message::DoneProcess);
+                return Task::done(Message::DapLink(TabDaplinkMessage::DoneProcess));
             }
-            Message::DoneEraseProcess(result) => {
+            TabDaplinkMessage::DoneEraseProcess(result) => {
                 if result.is_err() {
                     self.log_widget.push(LogType::Error(format!(
                         "Failed to run erase process. Error: {}",
@@ -201,7 +200,7 @@ impl EasyDapLink {
 
                                 return Task::perform(
                                     open_ocd_task::flash_target(self.bootloader_path.clone()),
-                                    Message::DoneFlashProcess,
+                                    |x| Message::DapLink(TabDaplinkMessage::DoneFlashProcess(x)),
                                 );
                             } else {
                                 self.log_widget
@@ -213,9 +212,9 @@ impl EasyDapLink {
                             .push(LogType::Warning("Process terminated by signal.".into())),
                     }
                 }
-                return Task::done(Message::DoneProcess);
+                return Task::done(Message::DapLink(TabDaplinkMessage::DoneProcess));
             }
-            Message::DoneFlashProcess(result) => {
+            TabDaplinkMessage::DoneFlashProcess(result) => {
                 if result.is_err() {
                     self.log_widget.push(LogType::Error(format!(
                         "Failed to run erase process. Error: {}",
@@ -238,7 +237,11 @@ impl EasyDapLink {
                                         MAINTENANCE_DISK_NAME.into(),
                                         Duration::from_secs(self.target_waiting_time),
                                     ),
-                                    Message::DoneWaitMaintenanceDisk,
+                                    |x| {
+                                        Message::DapLink(
+                                            TabDaplinkMessage::DoneWaitMaintenanceDisk(x),
+                                        )
+                                    },
                                 );
                             } else {
                                 self.log_widget
@@ -250,15 +253,15 @@ impl EasyDapLink {
                             .push(LogType::Warning("Process terminated by signal.".into())),
                     }
                 }
-                return Task::done(Message::DoneProcess);
+                return Task::done(Message::DapLink(TabDaplinkMessage::DoneProcess));
             }
 
-            Message::DoneWaitMaintenanceDisk(is_found) => {
+            TabDaplinkMessage::DoneWaitMaintenanceDisk(is_found) => {
                 if !is_found {
                     self.log_widget.push(LogType::Error(format!(
                         "TIMEOUT : The device '{MAINTENANCE_DISK_NAME}' was not found."
                     )));
-                    return Task::done(Message::DoneProcess);
+                    return Task::done(Message::DapLink(TabDaplinkMessage::DoneProcess));
                 }
 
                 self.log_widget.push(LogType::InfoNoPrefix("\n\n".into()));
@@ -270,10 +273,10 @@ impl EasyDapLink {
                         MAINTENANCE_DISK_NAME.into(),
                         self.firmware_path.clone(),
                     ),
-                    Message::DoneCopyFirmware,
+                    |x| Message::DapLink(TabDaplinkMessage::DoneCopyFirmware(x)),
                 );
             }
-            Message::DoneCopyFirmware(result) => {
+            TabDaplinkMessage::DoneCopyFirmware(result) => {
                 match result {
                     Ok(_) => {
                         if self.user_file_path.exists() && self.user_file_path.is_file() {
@@ -287,7 +290,7 @@ impl EasyDapLink {
                                     self.target_name.clone(),
                                     Duration::from_secs(self.target_waiting_time),
                                 ),
-                                Message::DoneWaitingDeviceDisk,
+                                |x| Message::DapLink(TabDaplinkMessage::DoneWaitingDeviceDisk(x)),
                             );
                         } else {
                             self.log_widget
@@ -298,16 +301,16 @@ impl EasyDapLink {
                         .log_widget
                         .push(LogType::Error(format!("Copy failed ({e})"))),
                 }
-                return Task::done(Message::DoneProcess);
+                return Task::done(Message::DapLink(TabDaplinkMessage::DoneProcess));
             }
 
-            Message::DoneWaitingDeviceDisk(is_found) => {
+            TabDaplinkMessage::DoneWaitingDeviceDisk(is_found) => {
                 if !is_found {
                     self.log_widget.push(LogType::Error(format!(
                         "TIMEOUT : The device '{}' was not found.",
                         self.target_name
                     )));
-                    return Task::done(Message::DoneProcess);
+                    return Task::done(Message::DapLink(TabDaplinkMessage::DoneProcess));
                 }
 
                 self.log_widget.push(LogType::InfoNoPrefix("\n\n".into()));
@@ -320,11 +323,11 @@ impl EasyDapLink {
                         self.target_name.clone(),
                         self.user_file_path.clone(),
                     ),
-                    Message::DoneCopyUserfile,
+                    |x| Message::DapLink(TabDaplinkMessage::DoneCopyUserfile(x)),
                 );
             }
 
-            Message::DoneCopyUserfile(result) => {
+            TabDaplinkMessage::DoneCopyUserfile(result) => {
                 match result {
                     Ok(_) => (),
                     Err(e) => self
@@ -332,32 +335,7 @@ impl EasyDapLink {
                         .push(LogType::Error(format!("Copy failed ({e})"))),
                 }
                 self.log_widget.push(LogType::InfoNoPrefix("\n\n".into()));
-                return Task::done(Message::DoneProcess);
-            }
-
-            Message::ApplicationEvent(event) => {
-                match event {
-                    Event::Keyboard(_) | Event::Mouse(_) | Event::Touch(_) => (),
-                    Event::Window(event) => match event {
-                        iced::window::Event::CloseRequested => {
-                            match dirs::get_settings_dir() {
-                                Ok(settings_dir) => {
-                                    let fields_file = settings_dir.join("fields.json");
-                                    match fs::write(
-                                        fields_file,
-                                        serde_json::to_string_pretty(&self).unwrap_or("{}".into()),
-                                    ) {
-                                        Ok(_) => println!("Fields succesfully saved"),
-                                        Err(e) => eprintln!("Failed to save fields ({e})"),
-                                    }
-                                }
-                                Err(e) => eprintln!("Failed to get settings dirs (Error: {e}"),
-                            };
-                            return iced::window::get_latest().and_then(iced::window::close);
-                        }
-                        _ => (),
-                    },
-                };
+                return Task::done(Message::DapLink(TabDaplinkMessage::DoneProcess));
             }
         }
 
@@ -373,9 +351,9 @@ impl EasyDapLink {
                         "Bootloader",
                         self.bootloader_path.to_str().unwrap_or_default()
                     )
-                    .on_input(Message::InputBootloaderPath)
+                    .on_input(|s| Message::DapLink(TabDaplinkMessage::InputBootloaderPath(s)))
                     .width(Length::Fill),
-                    button("...").on_press(Message::BrowseBootloader)
+                    button("...").on_press(Message::DapLink(TabDaplinkMessage::BrowseBootloader))
                 ]
                 .spacing(8)
             ),
@@ -383,9 +361,9 @@ impl EasyDapLink {
                 "Firmware file",
                 row![
                     text_input("Firmware", self.firmware_path.to_str().unwrap_or_default())
-                        .on_input(Message::InputFirmwarePath)
+                        .on_input(|s| Message::DapLink(TabDaplinkMessage::InputFirmwarePath(s)))
                         .width(Length::Fill),
-                    button("...").on_press(Message::BrowseFirmware)
+                    button("...").on_press(Message::DapLink(TabDaplinkMessage::BrowseFirmware))
                 ]
                 .spacing(8)
             ),
@@ -396,9 +374,9 @@ impl EasyDapLink {
                         "User program",
                         self.user_file_path.to_str().unwrap_or_default()
                     )
-                    .on_input(Message::InputUserFilePath)
+                    .on_input(|s| Message::DapLink(TabDaplinkMessage::InputUserFilePath(s)))
                     .width(Length::Fill),
-                    button("...").on_press(Message::BrowseUserFile)
+                    button("...").on_press(Message::DapLink(TabDaplinkMessage::BrowseUserFile))
                 ]
                 .spacing(8)
             ),
@@ -413,16 +391,14 @@ impl EasyDapLink {
             grid_row!(
                 "Target mount name",
                 text_input("STeaMi, DIS_L4IOT, ...", &self.target_name)
-                    .on_input(Message::TargetNameChanged)
+                    .on_input(|s| Message::DapLink(TabDaplinkMessage::TargetNameChanged(s)))
                     .width(200),
             ),
             grid_row!(
                 "Timeout (s) for mount points",
-                number_input(
-                    self.target_waiting_time,
-                    TIMEOUT_MIN..=TIMEOUT_MAX,
-                    Message::TimeoutChanged
-                )
+                number_input(self.target_waiting_time, TIMEOUT_MIN..=TIMEOUT_MAX, |x| {
+                    Message::DapLink(TabDaplinkMessage::TimeoutChanged(x))
+                })
                 .step(1)
                 .width(Length::Fill)
             ),
@@ -440,7 +416,7 @@ impl EasyDapLink {
                 .align_x(Horizontal::Center),
         )
         .width(Length::Fill)
-        .on_press(Message::StartProcess);
+        .on_press(Message::DapLink(TabDaplinkMessage::StartProcess));
 
         let log_view = container(self.log_widget.view())
             .height(Length::Fill)
@@ -515,7 +491,7 @@ impl EasyDapLink {
     }
 }
 
-impl Default for EasyDapLink {
+impl Default for TabDaplink {
     fn default() -> Self {
         let mut object = Self {
             theme: Theme::default(),
