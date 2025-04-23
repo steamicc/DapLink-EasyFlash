@@ -6,6 +6,12 @@ use crate::ProcessResult;
 
 #[derive(Debug, Clone)]
 pub enum Message {
+    DapLink(TabDaplinkMessage),
+    ApplicationEvent(Event),
+}
+
+#[derive(Debug, Clone)]
+pub enum TabDaplinkMessage {
     BrowseBootloader,
     BrowseFirmware,
     BrowseUserFile,
@@ -30,6 +36,4 @@ pub enum Message {
     DoneCopyFirmware(Result<(), String>),
     DoneWaitingDeviceDisk(bool),
     DoneCopyUserfile(Result<(), String>),
-
-    ApplicationEvent(Event),
 }

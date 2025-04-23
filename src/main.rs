@@ -2,16 +2,19 @@ use std::process::exit;
 
 use iced::{window, Settings, Size};
 use log_entries::LogEntries;
-use main_widget::EasyDapLink;
+use ui::main_window::MainWindow;
+// use main_widget::EasyDapLink;
 
 mod dirs;
 mod disk_tool;
 mod log_entries;
-mod log_widget;
-mod main_widget;
-mod messages;
+// mod log_widget;
+// mod main_widget;
+// mod messages;
 mod open_ocd_task;
 mod utils;
+
+mod ui;
 
 #[derive(Debug, Clone)]
 struct ProcessResult {
@@ -28,8 +31,8 @@ fn main() -> iced::Result {
         }
     };
 
-    iced::application(EasyDapLink::title, EasyDapLink::update, EasyDapLink::view)
-        .theme(EasyDapLink::theme)
+    iced::application(MainWindow::title, MainWindow::update, MainWindow::view)
+        .theme(MainWindow::theme)
         .settings(Settings::default())
         .font(iced_fonts::REQUIRED_FONT_BYTES)
         .window(window::Settings {
@@ -43,7 +46,7 @@ fn main() -> iced::Result {
             }),
             ..Default::default()
         })
-        .subscription(EasyDapLink::application_subscription)
+        .subscription(MainWindow::application_subscription)
         .exit_on_close_request(false)
         .run()
 }
