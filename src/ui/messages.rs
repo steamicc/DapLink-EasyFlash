@@ -4,9 +4,12 @@ use iced::Event;
 
 use crate::ProcessResult;
 
+use super::tab_wireless_stack::WirelessStackFile;
+
 #[derive(Debug, Clone)]
 pub enum Message {
     DapLink(TabDaplinkMessage),
+    WirelessStack(TabWirelessStackMessage),
 
     TabBarSelected(u16),
     ApplicationEvent(Event),
@@ -38,4 +41,11 @@ pub enum TabDaplinkMessage {
     DoneCopyFirmware(Result<(), String>),
     DoneWaitingDeviceDisk(bool),
     DoneCopyUserfile(Result<(), String>),
+}
+
+#[derive(Debug, Clone)]
+pub enum TabWirelessStackMessage {
+    StackSelected(WirelessStackFile),
+    SerialSelected(String),
+    StartProcess,
 }
