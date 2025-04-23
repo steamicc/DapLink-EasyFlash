@@ -1,10 +1,9 @@
 use std::{fs, path::PathBuf, str::FromStr, time::Duration};
 
 use iced::{
-    advanced::graphics::futures::event,
     alignment::Horizontal,
     widget::{button, center, column, container, opaque, row, stack, text, text_input},
-    Element, Event, Length, Subscription, Task, Theme,
+    Element, Length, Task, Theme,
 };
 use iced_aw::{grid, grid_row, number_input};
 use serde::{Deserialize, Serialize};
@@ -26,8 +25,6 @@ fn default_target_waiting_time() -> u64 {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct TabDaplink {
-    #[serde(skip)]
-    theme: Theme,
     #[serde(skip)]
     is_readonly: bool,
     bootloader_path: PathBuf,
@@ -444,10 +441,6 @@ impl TabDaplink {
         final_view.spacing(16).padding(8).into()
     }
 
-    pub fn application_subscription(&self) -> Subscription<Message> {
-        event::listen().map(Message::ApplicationEvent)
-    }
-
     fn validate_fields(&mut self) -> bool {
         if !self.bootloader_path.exists() {
             self.log_widget.push(LogType::Error(
@@ -472,6 +465,7 @@ impl TabDaplink {
         true
     }
 
+    // TODO Improve fields loading/saving
     fn load_fields() -> Option<Self> {
         match dirs::get_settings_dir() {
             Ok(settings_dir) => {
@@ -494,7 +488,6 @@ impl TabDaplink {
 impl Default for TabDaplink {
     fn default() -> Self {
         let mut object = Self {
-            theme: Theme::default(),
             is_readonly: false,
             bootloader_path: PathBuf::default(),
             firmware_path: PathBuf::default(),
