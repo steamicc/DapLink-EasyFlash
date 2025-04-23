@@ -43,8 +43,8 @@ jobs:
       - name: Prepare artifacts
         run: |
           mkdir artifacts
-          mv easy_flash_daplink artifacts/easy_flash_daplink-${{github.ref_name}}.exe
-          mv linux.zip artifacts/easy_flash_daplink-${{github.ref_name}}-linux_${{matrix.os}}.zip
+          mv easy_flash_daplink artifacts/easy_flash_daplink-${{github.ref_name}}-${{matrix.os}}
+          mv linux.zip artifacts/easy_flash_daplink-${{github.ref_name}}-xpack-${{matrix.os}}.zip
 
       - name: Publish artifacts
         uses: svenstaro/upload-release-action@v2
@@ -88,7 +88,7 @@ jobs:
         run: |
           mkdir artifacts
           mv easy_flash_daplink.exe artifacts/easy_flash_daplink-${{github.ref_name}}.exe
-          mv windows.zip artifacts/easy_flash_daplink-${{github.ref_name}}-windows.zip
+          mv windows.zip artifacts/easy_flash_daplink-${{github.ref_name}}-xpack-windows.zip
 
       - name: Publish artifacts
         uses: svenstaro/upload-release-action@v2
