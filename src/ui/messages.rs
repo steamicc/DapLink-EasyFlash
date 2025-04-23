@@ -7,6 +7,8 @@ use crate::ProcessResult;
 #[derive(Debug, Clone)]
 pub enum Message {
     DapLink(TabDaplinkMessage),
+
+    TabBarSelected(u16),
     ApplicationEvent(Event),
 }
 

@@ -1,22 +1,24 @@
-use std::{fs, path::PathBuf, str::FromStr, time::Duration};
+use std::fs;
 
 use iced::{
-    advanced::graphics::futures::event,
-    alignment::Horizontal,
-    widget::{button, center, column, container, opaque, row, stack, text, text_input},
-    Element, Event, Length, Subscription, Task, Theme,
+    advanced::graphics::futures::event, widget::column, Element, Event, Subscription, Task, Theme,
 };
-use iced_aw::{grid, grid_row, number_input};
+use iced_aw::{TabBar, TabLabel};
 use serde::{Deserialize, Serialize};
 
-use crate::{dirs, disk_tool, log_entries::LogType, open_ocd_task, utils};
+use crate::dirs;
 
-use super::{log_widget::LogWidget, messages::Message, tab_daplink::TabDaplink};
+use super::{messages::Message, tab_daplink::TabDaplink};
+
+const DAPLINK_TAB: u16 = 0;
+const WIRELESS_STACK_TAB: u16 = 1;
 
 #[derive(Default, Debug, Serialize, Deserialize)]
 pub struct MainWindow {
     #[serde(skip)]
     theme: Theme,
+    #[serde(skip)]
+    active_tab: u16,
     tab_daplink: TabDaplink,
 }
 
@@ -31,6 +33,7 @@ impl MainWindow {
 
     pub fn update(&mut self, message: Message) -> Task<Message> {
         match message {
+            Message::DapLink(tab_daplink_message) => self.tab_daplink.update(tab_daplink_message),
             Message::ApplicationEvent(event) => match event {
                 Event::Keyboard(_) | Event::Mouse(_) | Event::Touch(_) => Task::none(),
                 Event::Window(event) => match event {
@@ -53,12 +56,31 @@ impl MainWindow {
                     _ => Task::none(),
                 },
             },
-            Message::DapLink(tab_daplink_message) => self.tab_daplink.update(tab_daplink_message),
+            Message::TabBarSelected(tab_idx) => {
+                println!("Selectred tab: {}", tab_idx);
+                self.active_tab = tab_idx;
+                Task::none()
+            }
         }
     }
 
     pub fn view(&self) -> Element<Message> {
-        self.tab_daplink.view()
+        let mut col = column![TabBar::new(Message::TabBarSelected)
+            .push(DAPLINK_TAB, TabLabel::Text("DapLink".into()))
+            .push(WIRELESS_STACK_TAB, TabLabel::Text("Wireless Stack".into()))
+            .padding(1)
+            .set_active_tab(&self.active_tab)];
+
+        col = match self.active_tab {
+            DAPLINK_TAB => col.push(self.tab_daplink.view()),
+            WIRELESS_STACK_TAB => col,
+            _ => {
+                eprintln!("Invalid selectd tab ({})", self.active_tab);
+                col
+            }
+        };
+
+        col.into()
     }
 
     pub fn application_subscription(&self) -> Subscription<Message> {
