@@ -3,14 +3,10 @@ use std::process::exit;
 use iced::{window, Settings, Size};
 use log_entries::LogEntries;
 use ui::main_window::MainWindow;
-// use main_widget::EasyDapLink;
 
 mod dirs;
 mod disk_tool;
 mod log_entries;
-// mod log_widget;
-// mod main_widget;
-// mod messages;
 mod open_ocd_task;
 mod utils;
 
@@ -23,13 +19,16 @@ struct ProcessResult {
 }
 
 fn main() -> iced::Result {
-    match open_ocd_task::create_script_file() {
-        Ok(_) => println!("Script created/updated"),
+    match std::env::current_exe() {
+        Ok(mut path) => {
+            path.pop();
+            dirs::set_exe_dir(path);
+        }
         Err(e) => {
             eprintln!("Failed to create/update scripts ({e})");
             exit(100);
         }
-    };
+    }
 
     iced::application(MainWindow::title, MainWindow::update, MainWindow::view)
         .theme(MainWindow::theme)

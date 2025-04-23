@@ -13,16 +13,12 @@ use crate::{
     ProcessResult,
 };
 
-const UNLOCK_SCRIPT_FILENAME: &str = "openocd-unlock.cfg";
-const ERASE_SCRIPT_FILENAME: &str = "openocd-erase.cfg";
-const FLASH_SCRIPT_FILENAME: &str = "openocd-flash.cfg";
-
-const UNLOCK_SCRIPT: &str = include_str!("../configs/openocd-unlock.cfg");
-const ERASE_SCRIPT: &str = include_str!("../configs/openocd-mass-erase.cfg");
-const FLASH_SCRIPT: &str = include_str!("../configs/openocd-flash.cfg");
+pub const UNLOCK_SCRIPT_FILENAME: &str = "openocd-unlock.cfg";
+pub const ERASE_SCRIPT_FILENAME: &str = "openocd-erase.cfg";
+pub const FLASH_SCRIPT_FILENAME: &str = "openocd-flash.cfg";
 
 pub async fn unlock_target() -> Result<ProcessResult, String> {
-    let script_folder: &Path = &dirs::get_script_dir()?;
+    let script_folder: &Path = &dirs::get_configs_dir()?;
     let path_script = script_folder.join(UNLOCK_SCRIPT_FILENAME);
 
     let mut command = Command::new("openocd");
@@ -32,7 +28,7 @@ pub async fn unlock_target() -> Result<ProcessResult, String> {
 }
 
 pub async fn erase_target() -> Result<ProcessResult, String> {
-    let script_folder: &Path = &dirs::get_script_dir()?;
+    let script_folder: &Path = &dirs::get_configs_dir()?;
     let path_script = script_folder.join(ERASE_SCRIPT_FILENAME);
 
     let mut command = Command::new("openocd");
@@ -42,7 +38,7 @@ pub async fn erase_target() -> Result<ProcessResult, String> {
 }
 
 pub async fn flash_target(bin_path: PathBuf) -> Result<ProcessResult, String> {
-    let script_folder: &Path = &dirs::get_script_dir()?;
+    let script_folder: &Path = &dirs::get_configs_dir()?;
     let path_script = script_folder.join(FLASH_SCRIPT_FILENAME);
 
     if !bin_path.is_file() {
@@ -77,21 +73,6 @@ pub fn is_installed() -> Result<bool, String> {
         .map_err(|e| e.to_string())?;
 
     Ok(child.status.success())
-}
-
-pub fn create_script_file() -> Result<(), String> {
-    let script_folder: &Path = &dirs::get_script_dir()?;
-
-    let path_unlock = script_folder.join(UNLOCK_SCRIPT_FILENAME);
-    let path_erase = script_folder.join(ERASE_SCRIPT_FILENAME);
-    let path_flash = script_folder.join(FLASH_SCRIPT_FILENAME);
-
-    fs::write(path_unlock, UNLOCK_SCRIPT)
-        .and_then(move |_| fs::write(path_erase, ERASE_SCRIPT))
-        .and_then(move |_| fs::write(path_flash, FLASH_SCRIPT))
-        .map_err(|e| format!("{e}"))?;
-
-    Ok(())
 }
 
 async fn run_command(cmd: &mut Command) -> Result<ProcessResult, String> {
