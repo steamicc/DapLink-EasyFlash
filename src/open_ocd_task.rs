@@ -13,9 +13,9 @@ use crate::{
     ProcessResult,
 };
 
-pub const UNLOCK_SCRIPT_FILENAME: &str = "openocd-unlock.cfg";
-pub const ERASE_SCRIPT_FILENAME: &str = "openocd-erase.cfg";
-pub const FLASH_SCRIPT_FILENAME: &str = "openocd-flash.cfg";
+pub const UNLOCK_SCRIPT_FILENAME: &str = "f1x-unlock.cfg";
+pub const ERASE_SCRIPT_FILENAME: &str = "f1x-erase.cfg";
+pub const FLASH_SCRIPT_FILENAME: &str = "f1x-flash.cfg";
 
 pub async fn unlock_target() -> Result<ProcessResult, String> {
     let script_folder: &Path = &dirs::get_configs_dir()?;
