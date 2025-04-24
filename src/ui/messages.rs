@@ -4,7 +4,7 @@ use iced::Event;
 
 use crate::ProcessResult;
 
-use super::tab_wireless_stack::WirelessStackFile;
+use super::tab_wireless_stack::{SerialPort, WirelessStackFile};
 
 #[derive(Debug, Clone)]
 pub enum Message {
@@ -46,6 +46,7 @@ pub enum TabDaplinkMessage {
 #[derive(Debug, Clone)]
 pub enum TabWirelessStackMessage {
     StackSelected(WirelessStackFile),
-    SerialSelected(String),
+    SerialSelected(SerialPort),
+    SerialRefresh,
     StartProcess,
 }

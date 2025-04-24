@@ -12,4 +12,5 @@ rfd = { version = "0.15.0", default-features = false, features = ["gtk3"] }
 sysinfo = "0.31.4"
 serde = { version = "1.0.209", features = ["derive"] }
 serde_json = "1.0.127"
+serialport = "4.7.1"
 
