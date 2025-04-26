@@ -19,6 +19,7 @@ use iced::{
     Element, Length, Task, Theme,
 };
 use iced_aw::{grid, grid_row};
+use serde::{Deserialize, Serialize};
 use serialport::{SerialPort, SerialPortType};
 
 use crate::{
@@ -52,14 +53,17 @@ pub struct SerialPortInfo {
     product: Option<String>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct TabWirelessStack {
     fw_selected: WirelessStackFile,
+    #[serde(skip)]
     serial_available_port: Vec<SerialPortInfo>,
+    #[serde(skip)]
     serial_selected: Option<SerialPortInfo>,
+    #[serde(skip)]
     log: LogWidget,
+    #[serde(skip)]
     is_readonly: bool,
-    // current_step: FwStep,
 }
 
 const ALL_STACK: [WirelessStackFile; 20] = [

@@ -12,13 +12,14 @@ use super::{messages::Message, tab_daplink::TabDaplink, tab_wireless_stack::TabW
 
 const DAPLINK_TAB: u16 = 0;
 const WIRELESS_STACK_TAB: u16 = 1;
+const SETTINGS_FILE: &str = "fields.json";
 
-// #[derive(Default, Debug, Serialize, Deserialize)]
-#[derive(Default, Debug)]
+#[derive(Default, Debug, Serialize, Deserialize)]
+// #[derive(Default, Debug)]
 pub struct MainWindow {
-    // #[serde(skip)]
+    #[serde(skip)]
     theme: Theme,
-    // #[serde(skip)]
+    #[serde(skip)]
     active_tab: u16,
     tab_daplink: TabDaplink,
     tab_ws: TabWirelessStack,
@@ -41,20 +42,42 @@ impl MainWindow {
             Message::ApplicationEvent(event) => match event {
                 Event::Keyboard(_) | Event::Mouse(_) | Event::Touch(_) => Task::none(),
                 Event::Window(event) => match event {
+                    iced::window::Event::Opened { .. } => {
+                        match dirs::get_settings_dir() {
+                            Ok(settings_dir) => {
+                                let fields_file = settings_dir.join(SETTINGS_FILE);
+                                match fs::read(fields_file) {
+                                    Ok(content) => match serde_json::from_slice::<Self>(&content) {
+                                        Ok(obj) => {
+                                            self.tab_daplink = obj.tab_daplink;
+                                            self.tab_ws = obj.tab_ws;
+                                            println!("Settings loaded !");
+                                        }
+                                        Err(e) => {
+                                            eprintln!("Failed to deserialize settings. Error: {e}");
+                                        }
+                                    },
+                                    Err(e) => eprintln!("Failed to open settings file ({e})"),
+                                }
+                            }
+                            Err(e) => eprintln!("Failed to get settings dirs (Error: {e}"),
+                        };
+                        return Task::none();
+                    }
                     iced::window::Event::CloseRequested => {
-                        // match dirs::get_settings_dir() {
-                        //     Ok(settings_dir) => {
-                        //         let fields_file = settings_dir.join("fields.json");
-                        //         match fs::write(
-                        //             fields_file,
-                        //             serde_json::to_string_pretty(&self).unwrap_or("{}".into()),
-                        //         ) {
-                        //             Ok(_) => println!("Fields succesfully saved"),
-                        //             Err(e) => eprintln!("Failed to save fields ({e})"),
-                        //         }
-                        //     }
-                        //     Err(e) => eprintln!("Failed to get settings dirs (Error: {e}"),
-                        // };
+                        match dirs::get_settings_dir() {
+                            Ok(settings_dir) => {
+                                let fields_file = settings_dir.join(SETTINGS_FILE);
+                                match fs::write(
+                                    fields_file,
+                                    serde_json::to_string_pretty(&self).unwrap_or("{}".into()),
+                                ) {
+                                    Ok(_) => println!("Settings succesfully saved"),
+                                    Err(e) => eprintln!("Failed to save settings ({e})"),
+                                }
+                            }
+                            Err(e) => eprintln!("Failed to get settings dirs (Error: {e}"),
+                        };
                         return iced::window::get_latest().and_then(iced::window::close);
                     }
                     _ => Task::none(),

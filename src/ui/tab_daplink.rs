@@ -1,4 +1,4 @@
-use std::{fs, path::PathBuf, str::FromStr, time::Duration};
+use std::{path::PathBuf, str::FromStr, time::Duration};
 
 use iced::{
     alignment::Horizontal,
@@ -8,7 +8,7 @@ use iced::{
 use iced_aw::{grid, grid_row, number_input};
 use serde::{Deserialize, Serialize};
 
-use crate::{dirs, disk_tool, log_entries::LogType, open_ocd_task, utils};
+use crate::{disk_tool, log_entries::LogType, open_ocd_task, utils};
 
 use super::{
     log_widget::LogWidget,
@@ -464,30 +464,11 @@ impl TabDaplink {
 
         true
     }
-
-    // TODO Improve fields loading/saving
-    // fn load_fields() -> Option<Self> {
-    //     match dirs::get_settings_dir() {
-    //         Ok(settings_dir) => {
-    //             let fields_file = settings_dir.join("fields.json");
-    //             match fs::read_to_string(fields_file) {
-    //                 Ok(str) => match serde_json::from_str(&str) {
-    //                     Ok(object) => return Some(object),
-    //                     Err(e) => eprintln!("Failed to load fields ({e})"),
-    //                 },
-    //                 Err(e) => eprintln!("Failed to read fields file ({e})"),
-    //             }
-    //         }
-    //         Err(e) => eprintln!("Failed to get settings dirs (Error: {e}"),
-    //     };
-
-    //     None
-    // }
 }
 
 impl Default for TabDaplink {
     fn default() -> Self {
-        let mut object = Self {
+        Self {
             is_readonly: false,
             bootloader_path: PathBuf::default(),
             firmware_path: PathBuf::default(),
@@ -495,19 +476,6 @@ impl Default for TabDaplink {
             target_waiting_time: 10,
             target_name: String::default(),
             log_widget: LogWidget::default(),
-        };
-
-        // match Self::load_fields() {
-        //     Some(saved) => {
-        //         object.bootloader_path = saved.bootloader_path;
-        //         object.firmware_path = saved.firmware_path;
-        //         object.user_file_path = saved.user_file_path;
-        //         object.target_name = saved.target_name;
-        //         object.target_waiting_time = saved.target_waiting_time;
-        //     }
-        //     None => (),
-        // }
-
-        object
+        }
     }
 }
