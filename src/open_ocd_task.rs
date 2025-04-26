@@ -1,5 +1,5 @@
 use std::{
-    fs,
+    fs, i32,
     io::{BufRead, BufReader},
     path::{Path, PathBuf},
     process::{Command, Stdio},
@@ -16,6 +16,7 @@ use crate::{
 pub const UNLOCK_SCRIPT_FILENAME: &str = "f1x-unlock.cfg";
 pub const ERASE_SCRIPT_FILENAME: &str = "f1x-erase.cfg";
 pub const FLASH_SCRIPT_FILENAME: &str = "f1x-flash.cfg";
+pub const WB55_CONFIG: &str = "wb5x.cfg";
 
 pub async fn unlock_target() -> Result<ProcessResult, String> {
     let script_folder: &Path = &dirs::get_configs_dir()?;
@@ -75,10 +76,51 @@ pub fn is_installed() -> Result<bool, String> {
     Ok(child.status.success())
 }
 
+pub async fn flash_wb55(file: &str, _offset: u32) -> Result<ProcessResult, String> {
+    let mut command = Command::new("openocd");
+    command.args(&[
+        "-f",
+        WB55_CONFIG,
+        "-c",
+        &format!("program {} verify reset", file),
+        "-c",
+        "reset run",
+        "-c",
+        "exit",
+    ]);
+
+    run_command(&mut command).await
+}
+
+//TODO : Really need a ref. here ?
 async fn run_command(cmd: &mut Command) -> Result<ProcessResult, String> {
     let logs = LogEntries::default();
 
-    let cmd = cmd.args(&["-s", "scripts"]);
+    let config_folder = dirs::get_configs_dir()?
+        .into_os_string()
+        .into_string()
+        .map_err(|_| "Failed to convert config path to string")?;
+
+    let ws_foler = dirs::get_wireless_stack_dir()?
+        .into_os_string()
+        .into_string()
+        .map_err(|_| "Failed to convert config path to string")?;
+
+    let tmp_folder = dirs::get_tmp_dir()?
+        .into_os_string()
+        .into_string()
+        .map_err(|_| "Failed to convert tmp_dir to string.")?;
+
+    let cmd = cmd.args(&[
+        "-s",
+        "scripts",
+        "-s",
+        &config_folder,
+        "-s",
+        &tmp_folder,
+        "-s",
+        &ws_foler,
+    ]);
 
     let mut child = cmd
         .stdout(Stdio::piped())
@@ -132,6 +174,11 @@ async fn run_command(cmd: &mut Command) -> Result<ProcessResult, String> {
         },
         None => return Err("Unable te get inner Arc".into()),
     };
+
+    logs.push(LogType::Warning(format!(
+        "Exit code: {}",
+        output.code().unwrap_or(i32::MIN)
+    )));
 
     Ok(ProcessResult {
         code: output.code(),
