@@ -2,14 +2,18 @@ use std::path::PathBuf;
 
 use iced::Event;
 
-use crate::ProcessResult;
+use crate::{
+    log_entries::{LogEntries, LogType},
+    stackfile_config::WirelessStackFile,
+    ProcessResult,
+};
 
-use super::tab_wireless_stack::{SerialPort, WirelessStackFile};
+use super::tab_wireless_stack::{FwStep, SerialPortInfo};
 
 #[derive(Debug, Clone)]
 pub enum Message {
     DapLink(TabDaplinkMessage),
-    WirelessStack(TabWirelessStackMessage),
+    WirelessStack(TabWsMessage),
 
     TabBarSelected(u16),
     ApplicationEvent(Event),
@@ -44,9 +48,12 @@ pub enum TabDaplinkMessage {
 }
 
 #[derive(Debug, Clone)]
-pub enum TabWirelessStackMessage {
+pub enum TabWsMessage {
     StackSelected(WirelessStackFile),
-    SerialSelected(SerialPort),
+    SerialSelected(SerialPortInfo),
     SerialRefresh,
-    StartProcess,
+
+    StepChange(FwStep),
+    LogMessage(LogType),
+    LogMessages(LogEntries),
 }
