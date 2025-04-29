@@ -8,6 +8,7 @@ mod dirs;
 mod disk_tool;
 mod log_entries;
 mod open_ocd_task;
+mod operator_tool;
 mod stackfile_config;
 mod utils;
 

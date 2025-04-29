@@ -64,3 +64,31 @@ pub const fn wireless_stack_config(file: WirelessStackFile) -> &'static str {
         WirelessStackFile::ZigbeeRfd => "stm32wb5xxG_Zigbee_RFD_fw.hex",
     }
 }
+
+impl std::fmt::Display for WirelessStackFile {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(match self {
+            WirelessStackFile::BleHciAdvScan => "BLE HCI AdvScan",
+            WirelessStackFile::BleHciExt => "BLE HCI Layer extended",
+            WirelessStackFile::BleHci => "BLE HCI Layer",
+            WirelessStackFile::BleMac => "BLE Mac 802.15.4",
+            WirelessStackFile::BleLld => "BLE LLD",
+            WirelessStackFile::BleStackFullExt => "BLE Stack full extended",
+            WirelessStackFile::BleStackFull => "BLE Stack full",
+            WirelessStackFile::BleStackLight => "BLE Stack light",
+            WirelessStackFile::BleThreadDyn => "BLE Thread dynamic",
+            WirelessStackFile::BleThreadSta => "BLE Thread static",
+            WirelessStackFile::BleZigbeeFfdDyn => "BLE Zigbee FFD dynamic",
+            WirelessStackFile::BleZigbeeFfdSta => "BLE Zigbee FFD static",
+            WirelessStackFile::BleZigbeeRfdDyn => "BLE Zigbee RFD dynamic",
+            WirelessStackFile::BleZigbeeRfdSta => "BLE Zigbee RFD static",
+            WirelessStackFile::Mac802154 => "Mac 802.15.4",
+            WirelessStackFile::Phy802154 => "Phy 802.15.4",
+            WirelessStackFile::ThreadFtd => "Thread FTD",
+            WirelessStackFile::ThreadMtd => "Thread MTD",
+            WirelessStackFile::ThreadRcp => "Thread RCP",
+            WirelessStackFile::ZigbeeFfd => "Zigbee FFD",
+            WirelessStackFile::ZigbeeRfd => "Zigbee RFD",
+        })
+    }
+}
