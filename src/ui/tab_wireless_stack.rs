@@ -37,6 +37,11 @@ use super::{
     messages::{Message, TabWsMessage},
 };
 
+const DELETE_CMD: &[u8] = "DELETE\n".as_bytes();
+const STATUS_CMD: &[u8] = "STATUS\n".as_bytes();
+const UPGRADE_CMD: &[u8] = "UPGRADE\n".as_bytes();
+const VERSION_CMD: &[u8] = "VERSION\n".as_bytes();
+
 #[derive(Debug, Default, Clone)]
 pub enum FwStep {
     #[default]
@@ -250,14 +255,13 @@ impl TabWirelessStack {
                 return;
             }
 
-            let line =
-                match Self::send_and_read_serial(&mut port, "VERSION\n".as_bytes(), None, None) {
-                    Ok(s) => s,
-                    Err(e) => {
-                        Self::error_handle(&mut o, e).await;
-                        return;
-                    }
-                };
+            let line = match Self::send_and_read_serial(&mut port, VERSION_CMD, None, None) {
+                Ok(s) => s,
+                Err(e) => {
+                    Self::error_handle(&mut o, e).await;
+                    return;
+                }
+            };
             let version = match Self::parse_result::<OperatorVersionResult>(&line) {
                 Ok(obj) => obj,
                 Err(e) => {
@@ -387,7 +391,7 @@ impl TabWirelessStack {
             let mut success = false;
             for attempt in 0..3 {
                 thread::sleep(Duration::from_secs(1));
-                match Self::send_and_read_serial(&mut port, "DELETE\n".as_bytes(), None, None) {
+                match Self::send_and_read_serial(&mut port, DELETE_CMD, None, None) {
                     Ok(_) => {
                         success = true;
                         break;
@@ -705,7 +709,7 @@ impl TabWirelessStack {
         let mut success = false;
         for nb in 0..2 {
             for attempt in 0..3 {
-                match Self::send_and_read_serial(port, "STATUS\n".as_bytes(), None, None) {
+                match Self::send_and_read_serial(port, STATUS_CMD, None, None) {
                     Ok(_) => {
                         success = true;
                         break;
@@ -742,7 +746,7 @@ impl TabWirelessStack {
 
         thread::sleep(Duration::from_secs(5));
 
-        port.write("UPGRADE\n".as_bytes())
+        port.write(UPGRADE_CMD)
             .map_err(|e| format!("Failed to write serial. Error: {e}"))?;
         port.flush()
             .map_err(|e| format!("Failed to flush serial. Error: {e}"))?;
