@@ -51,6 +51,8 @@ impl MainWindow {
                                         Ok(obj) => {
                                             self.tab_daplink = obj.tab_daplink;
                                             self.tab_ws = obj.tab_ws;
+
+                                            self.tab_ws.refresh_serial_ports();
                                             println!("Settings loaded !");
                                         }
                                         Err(e) => {
