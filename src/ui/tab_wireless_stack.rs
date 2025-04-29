@@ -26,6 +26,9 @@ use crate::{
     dirs,
     log_entries::{LogEntries, LogType},
     open_ocd_task,
+    operator_tool::{
+        operator_error_string, upgrade_status_string, OperatorResult, OperatorVersionResult,
+    },
     stackfile_config::{fus_config, wireless_stack_config, FusFile, WirelessStackFile},
 };
 
@@ -42,7 +45,6 @@ pub enum FwStep {
     StepFlashOperator,
     StepUpgradeFUS,
     StepFlashFUS(String),
-    StepUnlockFUS,
     StepDeleteFW,
     StepFlashFW,
 }
@@ -176,10 +178,9 @@ impl TabWirelessStack {
                     FwStep::StepFlashOperator => self.step_flash_operator(),
                     FwStep::StepUpgradeFUS => self.step_upgrade_fus(),
                     FwStep::StepFlashFUS(file) => self.step_flash_fus(file),
-                    FwStep::StepUnlockFUS => self.step_unlock_fus(),
                     FwStep::StepDeleteFW => self.step_delete_fw(),
                     FwStep::StepFlashFW => self.step_flash_fw(),
-                }
+                };
             }
             TabWsMessage::LogMessage(log) => self.log.push(log),
             TabWsMessage::LogMessages(entries) => self.log.from_log_entries(&entries),
@@ -233,24 +234,40 @@ impl TabWirelessStack {
 
         let serial = self.serial_selected.as_ref().unwrap().clone();
         Self::message_runner(|mut o| async move {
-            let (major, minor) = match Self::read_fus_version(serial).await {
-                Ok(version) => {
-                    Self::send_log(
-                        &mut o,
-                        LogType::Info(format!("FUS version : {:#010x}", version)),
-                    )
-                    .await;
+            thread::sleep(Duration::from_secs(1));
 
-                    let major = (version & 0xFF000000) >> 24;
-                    let minor = (version & 0x00FF0000) >> 16;
-
-                    (major, minor)
+            let mut port = match Self::open_port(&serial.port) {
+                Ok(p) => p,
+                Err(e) => {
+                    Self::error_handle(&mut o, format!("Failed to open serial port. Error: {e}"))
+                        .await;
+                    return;
                 }
+            };
+
+            if let Err(e) = Self::send_double_status(&mut port, &mut o).await {
+                Self::error_handle(&mut o, e).await;
+                return;
+            }
+
+            let line =
+                match Self::send_and_read_serial(&mut port, "VERSION\n".as_bytes(), None, None) {
+                    Ok(s) => s,
+                    Err(e) => {
+                        Self::error_handle(&mut o, e).await;
+                        return;
+                    }
+                };
+            let version = match Self::parse_result::<OperatorVersionResult>(&line) {
+                Ok(obj) => obj,
                 Err(e) => {
                     Self::error_handle(&mut o, e).await;
                     return;
                 }
             };
+
+            let major = (version.fus_version & 0xFF000000) >> 24;
+            let minor = (version.fus_version & 0x00FF0000) >> 16;
 
             let mut fus: Option<&str> = None;
 
@@ -263,7 +280,9 @@ impl TabWirelessStack {
             } else if major == 0x02 {
                 Self::send_log(
                     &mut o,
-                    LogType::Info("FUS is ahead ! Let's give it a try".to_string()),
+                    LogType::Warning(
+                        "FUS is ahead ! Let's give it a try. But it could fail...".to_string(),
+                    ),
                 )
                 .await;
             } else {
@@ -280,7 +299,7 @@ impl TabWirelessStack {
 
             match fus {
                 Some(file) => Self::send_step(&mut o, FwStep::StepFlashFUS(file.to_string())).await,
-                None => Self::send_step(&mut o, FwStep::StepUnlockFUS).await,
+                None => Self::send_step(&mut o, FwStep::StepDeleteFW).await,
             };
         })
     }
@@ -290,7 +309,7 @@ impl TabWirelessStack {
 
         let serial = self.serial_selected.as_ref().unwrap().clone();
         Self::message_runner(|mut o| async move {
-            let path_op = match Self::path_ws_file("wb55_operator.hex") {
+            let path_op = match Self::path_ws_file("wb55_operator_no_end.hex") {
                 Ok(path) => path,
                 Err(e) => {
                     Self::error_handle(&mut o, e).await;
@@ -338,89 +357,11 @@ impl TabWirelessStack {
                 }
             }
 
-            let mut port = match Self::open_port(&serial.port) {
-                Ok(port) => port,
-                Err(e) => {
-                    Self::send_log(
-                        &mut o,
-                        LogType::Error(format!("Failed to open serial port. Error: {e}")),
-                    )
-                    .await;
-                    Self::send_step(&mut o, FwStep::Ready).await;
-                    return;
-                }
-            };
-
             Self::send_log(&mut o, LogType::Info("Send UPGRADE command".into())).await;
-            // TODO : Read and check the results of UPGRADE command
-            let mut read_buf = [0; 1024];
-            match Self::send_and_read_serial(
-                &mut port,
-                "UPGRADE\n".as_bytes(),
-                &mut read_buf,
-                None,
-                Some(Duration::from_secs(10)),
-            ) {
-                Ok(_) => Self::send_step(&mut o, FwStep::StepUnlockFUS).await,
+            match Self::fus_upgrade_cmd(&serial).await {
+                Ok(_) => Self::send_step(&mut o, FwStep::StepUpgradeFUS).await,
                 Err(e) => Self::error_handle(&mut o, e).await,
-            };
-        })
-    }
-
-    fn step_unlock_fus(&mut self) -> Task<Message> {
-        self.log.push(LogType::Info("Unlock FUS".to_string()));
-
-        let serial = self.serial_selected.as_ref().unwrap().clone();
-        Self::message_runner(|mut o| async move {
-            let mut port = match Self::open_port(&serial.port) {
-                Ok(port) => port,
-                Err(e) => {
-                    Self::send_log(
-                        &mut o,
-                        LogType::Error(format!("Failed to open serial port. Error: {e}")),
-                    )
-                    .await;
-                    Self::send_step(&mut o, FwStep::Ready).await;
-                    return;
-                }
-            };
-
-            let mut read_buf = [0; 128];
-            for nb in 0..2 {
-                let mut success = false;
-                for attempt in 0..3 {
-                    match Self::send_and_read_serial(
-                        &mut port,
-                        "STATUS\n".as_bytes(),
-                        &mut read_buf,
-                        None,
-                        None,
-                    ) {
-                        Ok(_) => {
-                            success = true;
-                            break;
-                        }
-                        Err(e) => {
-                            Self::send_log(
-                                &mut o,
-                                LogType::Warning(format!(
-                                    "STATUS #{}, attempt #{} failed (Error: {e}.",
-                                    nb + 1,
-                                    attempt + 1
-                                )),
-                            )
-                            .await
-                        }
-                    }
-                }
-
-                if !success {
-                    Self::send_log(&mut o, LogType::Error("Unable to unlock FUS.".into())).await;
-                    Self::send_step(&mut o, FwStep::Ready).await;
-                }
             }
-
-            Self::send_step(&mut o, FwStep::StepDeleteFW).await;
         })
     }
 
@@ -443,17 +384,10 @@ impl TabWirelessStack {
                 }
             };
 
-            let mut read_buf = [0; 64];
             let mut success = false;
             for attempt in 0..3 {
                 thread::sleep(Duration::from_secs(1));
-                match Self::send_and_read_serial(
-                    &mut port,
-                    "DELETE\n".as_bytes(),
-                    &mut read_buf,
-                    None,
-                    None,
-                ) {
+                match Self::send_and_read_serial(&mut port, "DELETE\n".as_bytes(), None, None) {
                     Ok(_) => {
                         success = true;
                         break;
@@ -471,16 +405,20 @@ impl TabWirelessStack {
                 }
             }
 
-            if success {
-                Self::send_step(&mut o, FwStep::StepFlashFW).await;
-            } else {
+            if !success {
                 Self::send_log(
                     &mut o,
                     LogType::Error("Unable to send delete command.".to_string()),
                 )
                 .await;
                 Self::send_step(&mut o, FwStep::Ready).await;
+                return;
             }
+
+            match Self::send_double_status(&mut port, &mut o).await {
+                Ok(_) => Self::send_step(&mut o, FwStep::StepFlashFW).await,
+                Err(e) => Self::error_handle(&mut o, e).await,
+            };
         })
     }
 
@@ -491,7 +429,7 @@ impl TabWirelessStack {
         let serial = self.serial_selected.as_ref().unwrap().clone();
         let fw = wireless_stack_config(self.fw_selected);
         Self::message_runner(move |mut o| async move {
-            let path_op = match Self::path_ws_file("wb55_operator.hex") {
+            let path_op = match Self::path_ws_file("wb55_operator_no_end.hex") {
                 Ok(path) => path,
                 Err(e) => {
                     Self::error_handle(&mut o, e).await;
@@ -539,31 +477,8 @@ impl TabWirelessStack {
                 }
             };
 
-            let mut port = match Self::open_port(&serial.port) {
-                Ok(port) => port,
-                Err(e) => {
-                    Self::send_log(
-                        &mut o,
-                        LogType::Error(format!("Failed to open serial port. Error: {e}")),
-                    )
-                    .await;
-                    Self::send_step(&mut o, FwStep::Ready).await;
-                    return;
-                }
-            };
-
-            thread::sleep(Duration::from_secs(5));
-
             Self::send_log(&mut o, LogType::Info("Send UPGRADE command".into())).await;
-            // TODO : Read and check the results of UPGRADE command
-            let mut read_buf = [0; 1024];
-            match Self::send_and_read_serial(
-                &mut port,
-                "UPGRADE\n".as_bytes(),
-                &mut read_buf,
-                None,
-                Some(Duration::from_secs(10)),
-            ) {
+            match Self::fus_upgrade_cmd(&serial).await {
                 Ok(_) => {
                     Self::send_log(
                         &mut o,
@@ -572,10 +487,8 @@ impl TabWirelessStack {
                     .await;
                     Self::send_step(&mut o, FwStep::Ready).await;
                 }
-                Err(e) => {
-                    Self::error_handle(&mut o, format!("{e}\n\nbuffer: {:?}", read_buf)).await
-                }
-            };
+                Err(e) => Self::error_handle(&mut o, e).await,
+            }
         })
     }
 
@@ -590,6 +503,7 @@ impl TabWirelessStack {
         let mut result_file = fs::OpenOptions::new()
             .append(false)
             .write(true)
+            .truncate(true)
             .create(true)
             .open(result)
             .map_err(|e| {
@@ -652,7 +566,7 @@ impl TabWirelessStack {
         Ok(path)
     }
 
-    fn refresh_serial_ports(&mut self) {
+    pub fn refresh_serial_ports(&mut self) {
         let ports = serialport::available_ports();
 
         self.serial_available_port.clear();
@@ -715,10 +629,9 @@ impl TabWirelessStack {
     fn send_and_read_serial(
         port: &mut Box<dyn SerialPort>,
         send_buf: &[u8],
-        read_buf: &mut [u8],
         wait_time: Option<Duration>,
         timeout: Option<Duration>,
-    ) -> Result<usize, String> {
+    ) -> Result<String, String> {
         if let Err(e) = port.write_all(send_buf) {
             return Err(format!("Serial write failed: {}", e.to_string()));
         }
@@ -733,38 +646,135 @@ impl TabWirelessStack {
 
         sleep(wait_time.unwrap_or(Duration::from_secs(1)));
 
-        let read = port.read(read_buf);
+        let read = Self::read_line(port, None);
 
         if timeout.is_some() {
             port.set_timeout(old_timeout).map_err(|x| x.to_string())?;
         }
 
         match read {
-            Ok(len) => Ok(len),
+            Ok(string) => Ok(string),
             Err(e) => Err(format!("Failed to read data. Error: {}", e)),
         }
     }
 
-    async fn read_fus_version(port_info: SerialPortInfo) -> Result<u32, String> {
-        thread::sleep(Duration::from_secs(2));
+    fn read_line(
+        port: &mut Box<dyn SerialPort>,
+        timeout: Option<Duration>,
+    ) -> Result<String, String> {
+        let old_timeout = port.timeout();
 
-        let mut port = Self::open_port(&port_info.port).map_err(|e| e.to_string())?;
-        let mut buffer: [u8; 200] = [0; 200];
+        if let Some(ref t) = timeout {
+            port.set_timeout(t.clone()).map_err(|x| x.to_string())?;
+        }
 
-        let bytes_read =
-            Self::send_and_read_serial(&mut port, "VERSION\n".as_bytes(), &mut buffer, None, None)?;
+        let mut buf = [0];
+        let mut result = String::new();
 
-        let json: serde_json::Value =
-            serde_json::from_str(&String::from_utf8_lossy(&buffer[0..bytes_read]))
-                .map_err(|e| format!("Failed to parse json. Error: {}", e))?;
-
-        match json
-            .as_object()
-            .and_then(|o| o.get("fus_version"))
-            .and_then(|x| x.as_u64())
+        while port
+            .read(&mut buf)
+            .map_err(|e| format!("Failed to read data. Error: {e}"))?
+            > 0
         {
-            Some(version) => Ok(version as u32),
-            None => Err(format!("Unable to get version from json \"{}\"", json)),
+            let c = buf[0] as char;
+            if c == '\n' {
+                break;
+            }
+
+            result.push(c);
+        }
+
+        if timeout.is_some() {
+            port.set_timeout(old_timeout).map_err(|x| x.to_string())?;
+        }
+
+        Ok(result)
+    }
+
+    fn parse_result<'a, T: serde::Deserialize<'a>>(result: &'a String) -> Result<T, String> {
+        match serde_json::from_str(result) {
+            Ok(obj) => Ok(obj),
+            Err(e) => Err(format!("Failed to parse json. Error: {e}")),
+        }
+    }
+
+    async fn send_double_status(
+        port: &mut Box<dyn SerialPort>,
+        o: &mut Sender<TabWsMessage>,
+    ) -> Result<(), String> {
+        let mut success = false;
+        for nb in 0..2 {
+            for attempt in 0..3 {
+                match Self::send_and_read_serial(port, "STATUS\n".as_bytes(), None, None) {
+                    Ok(_) => {
+                        success = true;
+                        break;
+                    }
+                    Err(e) => {
+                        Self::send_log(
+                            o,
+                            LogType::Warning(format!(
+                                "STATUS #{}, attempt #{} failed (Error: {e}.",
+                                nb + 1,
+                                attempt + 1
+                            )),
+                        )
+                        .await;
+                    }
+                }
+            }
+        }
+
+        if success {
+            Ok(())
+        } else {
+            Err("Unable to unlock FUS.".into())
+        }
+    }
+
+    async fn fus_upgrade_cmd(port_info: &SerialPortInfo) -> Result<(), String> {
+        let mut port = match Self::open_port(&port_info.port) {
+            Ok(port) => port,
+            Err(e) => {
+                return Err(format!("Failed to open serial port. Error: {e}"));
+            }
+        };
+
+        thread::sleep(Duration::from_secs(5));
+
+        port.write("UPGRADE\n".as_bytes())
+            .map_err(|e| format!("Failed to write serial. Error: {e}"))?;
+        port.flush()
+            .map_err(|e| format!("Failed to flush serial. Error: {e}"))?;
+
+        let mut errors = String::new();
+        loop {
+            let line = Self::read_line(&mut port, Some(Duration::from_secs(10)))?;
+            let result: OperatorResult = Self::parse_result(&line)?;
+
+            println!(
+                "[upgrade] status: {} ({})  |  error: {} ({})",
+                result.status,
+                upgrade_status_string(result.status),
+                result.error.unwrap_or(0),
+                operator_error_string(result.error.unwrap_or(0))
+            );
+
+            if let Some(ref err) = result.error {
+                if *err != 0 {
+                    errors += &format!("{}\r\n", operator_error_string(*err));
+                }
+            }
+
+            if result.status == 0 {
+                break;
+            }
+        }
+
+        if errors.len() == 0 {
+            Ok(())
+        } else {
+            Err(errors)
         }
     }
 }
@@ -782,34 +792,6 @@ impl Default for TabWirelessStack {
         s.refresh_serial_ports();
 
         s
-    }
-}
-
-impl std::fmt::Display for WirelessStackFile {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str(match self {
-            WirelessStackFile::BleHciAdvScan => "BLE HCI AdvScan",
-            WirelessStackFile::BleHciExt => "BLE HCI Layer extended",
-            WirelessStackFile::BleHci => "BLE HCI Layer",
-            WirelessStackFile::BleMac => "BLE Mac 802.15.4",
-            WirelessStackFile::BleLld => "BLE LLD",
-            WirelessStackFile::BleStackFullExt => "BLE Stack full extended",
-            WirelessStackFile::BleStackFull => "BLE Stack full",
-            WirelessStackFile::BleStackLight => "BLE Stack light",
-            WirelessStackFile::BleThreadDyn => "BLE Thread dynamic",
-            WirelessStackFile::BleThreadSta => "BLE Thread static",
-            WirelessStackFile::BleZigbeeFfdDyn => "BLE Zigbee FFD dynamic",
-            WirelessStackFile::BleZigbeeFfdSta => "BLE Zigbee FFD static",
-            WirelessStackFile::BleZigbeeRfdDyn => "BLE Zigbee RFD dynamic",
-            WirelessStackFile::BleZigbeeRfdSta => "BLE Zigbee RFD static",
-            WirelessStackFile::Mac802154 => "Mac 802.15.4",
-            WirelessStackFile::Phy802154 => "Phy 802.15.4",
-            WirelessStackFile::ThreadFtd => "Thread FTD",
-            WirelessStackFile::ThreadMtd => "Thread MTD",
-            WirelessStackFile::ThreadRcp => "Thread RCP",
-            WirelessStackFile::ZigbeeFfd => "Zigbee FFD",
-            WirelessStackFile::ZigbeeRfd => "Zigbee RFD",
-        })
     }
 }
 
