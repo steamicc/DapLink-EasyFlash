@@ -219,7 +219,7 @@ impl TabWirelessStack {
         self.log.push(LogType::Info("Flash operator".to_string()));
 
         Self::message_runner(|mut o| async move {
-            match open_ocd_task::flash_wb55("wb55_operator.hex", 0).await {
+            match open_ocd_task::flash_wb55("wb55_operator.hex", &mut o).await {
                 Ok(result) => {
                     if result.code.is_some() && result.code.unwrap() != 0 {
                         Self::send_log(&mut o, LogType::Error("Flash failed".into())).await;
@@ -345,7 +345,7 @@ impl TabWirelessStack {
                 return;
             }
 
-            match open_ocd_task::flash_wb55("merge.hex", 0).await {
+            match open_ocd_task::flash_wb55("merge.hex", &mut o).await {
                 Ok(result) => {
                     if result.code.is_some() && result.code.unwrap() != 0 {
                         Self::send_log(&mut o, LogType::Error("Flash failed".into())).await;
@@ -465,7 +465,7 @@ impl TabWirelessStack {
                 return;
             }
 
-            match open_ocd_task::flash_wb55("merge.hex", 0).await {
+            match open_ocd_task::flash_wb55("merge.hex", &mut o).await {
                 Ok(result) => {
                     if result.code.is_some() && result.code.unwrap() != 0 {
                         Self::send_log(&mut o, LogType::Error("Flash failed".into())).await;
@@ -547,21 +547,21 @@ impl TabWirelessStack {
         Ok(())
     }
 
-    async fn send_logs(o: &mut Sender<TabWsMessage>, logs: LogEntries) {
-        let _ = o.send(TabWsMessage::LogMessages(logs)).await;
+    async fn send_logs(sender: &mut Sender<TabWsMessage>, logs: LogEntries) {
+        let _ = sender.send(TabWsMessage::LogMessages(logs)).await;
     }
 
-    async fn send_log(o: &mut Sender<TabWsMessage>, log: LogType) {
-        let _ = o.send(TabWsMessage::LogMessage(log)).await;
+    async fn send_log(sender: &mut Sender<TabWsMessage>, log: LogType) {
+        let _ = sender.send(TabWsMessage::LogMessage(log)).await;
     }
 
-    async fn send_step(o: &mut Sender<TabWsMessage>, step: FwStep) {
-        let _ = o.send(TabWsMessage::StepChange(step)).await;
+    async fn send_step(sender: &mut Sender<TabWsMessage>, step: FwStep) {
+        let _ = sender.send(TabWsMessage::StepChange(step)).await;
     }
 
-    async fn error_handle(o: &mut Sender<TabWsMessage>, error: String) {
-        Self::send_log(o, LogType::Error(error)).await;
-        Self::send_step(o, FwStep::Ready).await;
+    async fn error_handle(sender: &mut Sender<TabWsMessage>, error: String) {
+        Self::send_log(sender, LogType::Error(error)).await;
+        Self::send_step(sender, FwStep::Ready).await;
     }
 
     fn path_ws_file(filename: &str) -> Result<PathBuf, String> {

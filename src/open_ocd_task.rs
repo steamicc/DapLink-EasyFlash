@@ -1,15 +1,19 @@
 use std::{
+    collections::VecDeque,
     fs, i32,
     io::{BufRead, BufReader},
     path::{Path, PathBuf},
-    process::{Command, Stdio},
+    process::{Command, ExitStatus, Stdio},
     sync::{Arc, Mutex},
     thread,
 };
 
+use iced::futures::{channel::mpsc::Sender, SinkExt};
+
 use crate::{
     dirs,
     log_entries::{LogEntries, LogType},
+    ui::messages::TabWsMessage,
     ProcessResult,
 };
 
@@ -76,7 +80,10 @@ pub fn is_installed() -> Result<bool, String> {
     Ok(child.status.success())
 }
 
-pub async fn flash_wb55(file: &str, _offset: u32) -> Result<ProcessResult, String> {
+pub async fn flash_wb55(
+    file: &str,
+    sender: &mut Sender<TabWsMessage>,
+) -> Result<ProcessResult, String> {
     let mut command = Command::new("openocd");
     command.args(&[
         "-f",
@@ -89,10 +96,10 @@ pub async fn flash_wb55(file: &str, _offset: u32) -> Result<ProcessResult, Strin
         "exit",
     ]);
 
-    run_command(&mut command).await
+    // run_command(&mut command).await
+    run_command_sender(&mut command, sender).await
 }
 
-//TODO : Really need a ref. here ?
 async fn run_command(cmd: &mut Command) -> Result<ProcessResult, String> {
     let logs = LogEntries::default();
 
@@ -183,5 +190,115 @@ async fn run_command(cmd: &mut Command) -> Result<ProcessResult, String> {
     Ok(ProcessResult {
         code: output.code(),
         log: logs,
+    })
+}
+
+async fn run_command_sender(
+    cmd: &mut Command,
+    sender: &mut Sender<TabWsMessage>,
+) -> Result<ProcessResult, String> {
+    let config_folder = dirs::get_configs_dir()?
+        .into_os_string()
+        .into_string()
+        .map_err(|_| "Failed to convert config path to string")?;
+
+    let ws_foler = dirs::get_wireless_stack_dir()?
+        .into_os_string()
+        .into_string()
+        .map_err(|_| "Failed to convert config path to string")?;
+
+    let tmp_folder = dirs::get_tmp_dir()?
+        .into_os_string()
+        .into_string()
+        .map_err(|_| "Failed to convert tmp_dir to string.")?;
+
+    let cmd = cmd.args(&[
+        "-s",
+        "scripts",
+        "-s",
+        &config_folder,
+        "-s",
+        &tmp_folder,
+        "-s",
+        &ws_foler,
+    ]);
+
+    let mut child = cmd
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .map_err(|e| e.to_string())?;
+
+    let stderr = child.stderr.take().unwrap();
+    let stdout = child.stdout.take().unwrap();
+
+    let mutex_messages: Arc<Mutex<VecDeque<LogType>>> = Arc::new(Mutex::new(VecDeque::new()));
+
+    let thread_message = mutex_messages.clone();
+    let thread_stdout = thread::spawn(move || {
+        let lines = BufReader::new(stderr).lines();
+
+        for line in lines {
+            match line {
+                Ok(line) => {
+                    println!("[OPEN OCD] {line}");
+                    thread_message
+                        .lock()
+                        .unwrap()
+                        .push_back(LogType::Info(format!("    {line}")));
+                }
+                Err(_) => (),
+            }
+        }
+    });
+
+    let thread_message = mutex_messages.clone();
+    let thread_stderr = thread::spawn(move || {
+        let lines = BufReader::new(stdout).lines();
+
+        for line in lines {
+            match line {
+                Ok(line) => {
+                    eprintln!("[OPEN OCD] {line}");
+                    thread_message
+                        .lock()
+                        .unwrap()
+                        .push_back(LogType::Error(format!("    {line}")));
+                }
+                Err(_) => (),
+            }
+        }
+    });
+
+    let output: ExitStatus;
+    let mut tmp_deque: VecDeque<LogType> = VecDeque::new();
+    loop {
+        if let Ok(mut deque) = mutex_messages.lock() {
+            tmp_deque = deque.clone();
+            deque.clear();
+        }
+
+        while let Some(msg) = tmp_deque.pop_front() {
+            let _ = sender.send(TabWsMessage::LogMessage(msg)).await;
+        }
+
+        if let Some(status) = child.try_wait().map_err(|e| e.to_string())? {
+            output = status;
+            let _ = thread_stdout.join();
+            let _ = thread_stderr.join();
+            break;
+        }
+    }
+
+    let _ = sender
+        .send(TabWsMessage::LogMessage(LogType::Warning(format!(
+            "Exit code: {}",
+            output.code().unwrap_or(i32::MIN)
+        ))))
+        .await;
+
+    Ok(ProcessResult {
+        code: output.code(),
+        log: Default::default(),
     })
 }
