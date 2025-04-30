@@ -40,6 +40,7 @@ pub struct TabDaplink {
 impl TabDaplink {
     pub fn update(&mut self, message: TabDaplinkMessage) -> Task<Message> {
         match message {
+            TabDaplinkMessage::LogMessage(log) => self.log_widget.push(log),
             TabDaplinkMessage::BrowseBootloader => {
                 self.is_readonly = true;
 
