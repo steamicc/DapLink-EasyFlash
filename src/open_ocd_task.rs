@@ -13,7 +13,7 @@ use iced::futures::{channel::mpsc::Sender, SinkExt};
 use crate::{
     dirs,
     log_entries::{LogEntries, LogType},
-    ui::messages::TabWsMessage,
+    ui::messages::{TabDaplinkMessage, TabWsMessage, WithLogMessage},
     ProcessResult,
 };
 
@@ -29,7 +29,7 @@ pub async fn unlock_target() -> Result<ProcessResult, String> {
     let mut command = Command::new("openocd");
     command.args(&["-f", &format!("{}", path_script.to_str().unwrap())]);
 
-    Ok(run_command(&mut command).await?)
+    Ok(run_command_sender::<TabDaplinkMessage>(&mut command, None).await?)
 }
 
 pub async fn erase_target() -> Result<ProcessResult, String> {
@@ -39,7 +39,7 @@ pub async fn erase_target() -> Result<ProcessResult, String> {
     let mut command = Command::new("openocd");
     command.args(&["-f", &format!("{}", path_script.to_str().unwrap())]);
 
-    Ok(run_command(&mut command).await?)
+    Ok(run_command_sender::<TabDaplinkMessage>(&mut command, None).await?)
 }
 
 pub async fn flash_target(bin_path: PathBuf) -> Result<ProcessResult, String> {
@@ -68,7 +68,7 @@ pub async fn flash_target(bin_path: PathBuf) -> Result<ProcessResult, String> {
         &format!("{}", path_script.to_str().unwrap()),
     ]);
 
-    Ok(run_command(&mut command).await?)
+    Ok(run_command_sender::<TabDaplinkMessage>(&mut command, None).await?)
 }
 
 pub fn is_installed() -> Result<bool, String> {
@@ -96,107 +96,16 @@ pub async fn flash_wb55(
         "exit",
     ]);
 
-    // run_command(&mut command).await
-    run_command_sender(&mut command, sender).await
+    run_command_sender(&mut command, Some(sender)).await
 }
 
-async fn run_command(cmd: &mut Command) -> Result<ProcessResult, String> {
-    let logs = LogEntries::default();
-
-    let config_folder = dirs::get_configs_dir()?
-        .into_os_string()
-        .into_string()
-        .map_err(|_| "Failed to convert config path to string")?;
-
-    let ws_foler = dirs::get_wireless_stack_dir()?
-        .into_os_string()
-        .into_string()
-        .map_err(|_| "Failed to convert config path to string")?;
-
-    let tmp_folder = dirs::get_tmp_dir()?
-        .into_os_string()
-        .into_string()
-        .map_err(|_| "Failed to convert tmp_dir to string.")?;
-
-    let cmd = cmd.args(&[
-        "-s",
-        "scripts",
-        "-s",
-        &config_folder,
-        "-s",
-        &tmp_folder,
-        "-s",
-        &ws_foler,
-    ]);
-
-    let mut child = cmd
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()
-        .map_err(|e| e.to_string())?;
-
-    let stderr = child.stderr.take().unwrap();
-    let stdout = child.stdout.take().unwrap();
-
-    let mutex_log = Arc::new(Mutex::new(logs));
-
-    let thread_mutex = mutex_log.clone();
-    let thread_stdout = thread::spawn(move || {
-        let lines = BufReader::new(stderr).lines();
-
-        for line in lines {
-            match line {
-                Ok(line) => {
-                    println!("[OPEN OCD] {line}");
-                    thread_mutex.lock().unwrap().push(LogType::Info(line));
-                }
-                Err(_) => (),
-            }
-        }
-    });
-
-    let thread_mutex = mutex_log.clone();
-    let thread_stderr = thread::spawn(move || {
-        let lines = BufReader::new(stdout).lines();
-
-        for line in lines {
-            match line {
-                Ok(line) => {
-                    eprintln!("[OPEN OCD] {line}");
-                    thread_mutex.lock().unwrap().push(LogType::Info(line))
-                }
-                Err(_) => (),
-            }
-        }
-    });
-
-    let output = child.wait().map_err(|e| e.to_string())?;
-    let _ = thread_stdout.join();
-    let _ = thread_stderr.join();
-
-    let logs = match Arc::into_inner(mutex_log) {
-        Some(m) => match m.into_inner() {
-            Ok(l) => l,
-            Err(e) => return Err(format!("Unable to get inner mutex ({e})")),
-        },
-        None => return Err("Unable te get inner Arc".into()),
-    };
-
-    logs.push(LogType::Warning(format!(
-        "Exit code: {}",
-        output.code().unwrap_or(i32::MIN)
-    )));
-
-    Ok(ProcessResult {
-        code: output.code(),
-        log: logs,
-    })
-}
-
-async fn run_command_sender(
+async fn run_command_sender<MSG>(
     cmd: &mut Command,
-    sender: &mut Sender<TabWsMessage>,
-) -> Result<ProcessResult, String> {
+    mut sender: Option<&mut Sender<MSG>>,
+) -> Result<ProcessResult, String>
+where
+    MSG: WithLogMessage,
+{
     let config_folder = dirs::get_configs_dir()?
         .into_os_string()
         .into_string()
@@ -270,8 +179,10 @@ async fn run_command_sender(
         }
     });
 
+    let logs = LogEntries::default();
     let output: ExitStatus;
     let mut tmp_deque: VecDeque<LogType> = VecDeque::new();
+
     loop {
         if let Ok(mut deque) = mutex_messages.lock() {
             tmp_deque = deque.clone();
@@ -279,7 +190,11 @@ async fn run_command_sender(
         }
 
         while let Some(msg) = tmp_deque.pop_front() {
-            let _ = sender.send(TabWsMessage::LogMessage(msg)).await;
+            if let Some(ref mut s) = sender {
+                let _ = s.send(MSG::log(msg)).await;
+            } else {
+                logs.push(msg);
+            }
         }
 
         if let Some(status) = child.try_wait().map_err(|e| e.to_string())? {
@@ -290,15 +205,17 @@ async fn run_command_sender(
         }
     }
 
-    let _ = sender
-        .send(TabWsMessage::LogMessage(LogType::Warning(format!(
-            "Exit code: {}",
-            output.code().unwrap_or(i32::MIN)
-        ))))
-        .await;
+    if let Some(ref mut s) = sender {
+        let _ = s
+            .send(MSG::log(LogType::Warning(format!(
+                "Exit code: {}",
+                output.code().unwrap_or(i32::MIN)
+            ))))
+            .await;
+    }
 
     Ok(ProcessResult {
         code: output.code(),
-        log: Default::default(),
+        log: logs,
     })
 }

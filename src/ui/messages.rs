@@ -10,6 +10,10 @@ use crate::{
 
 use super::tab_wireless_stack::{FwStep, SerialPortInfo};
 
+pub trait WithLogMessage {
+    fn log(log: LogType) -> Self;
+}
+
 #[derive(Debug, Clone)]
 pub enum Message {
     DapLink(TabDaplinkMessage),
@@ -21,6 +25,8 @@ pub enum Message {
 
 #[derive(Debug, Clone)]
 pub enum TabDaplinkMessage {
+    LogMessage(LogType),
+
     BrowseBootloader,
     BrowseFirmware,
     BrowseUserFile,
@@ -56,4 +62,16 @@ pub enum TabWsMessage {
     StepChange(FwStep),
     LogMessage(LogType),
     LogMessages(LogEntries),
+}
+
+impl WithLogMessage for TabWsMessage {
+    fn log(log: LogType) -> TabWsMessage {
+        TabWsMessage::LogMessage(log)
+    }
+}
+
+impl WithLogMessage for TabDaplinkMessage {
+    fn log(log: LogType) -> TabDaplinkMessage {
+        TabDaplinkMessage::LogMessage(log)
+    }
 }
