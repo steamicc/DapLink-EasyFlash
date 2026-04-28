@@ -2,15 +2,6 @@ use serde::Deserialize;
 
 #[allow(unused)]
 #[derive(Debug, Default, Clone, Deserialize)]
-pub struct OperatorStatusResult {
-    pub status: u32,
-    pub last_fus_status: u32,
-    pub last_ws_status: u32,
-    pub current_ws: u32,
-}
-
-#[allow(unused)]
-#[derive(Debug, Default, Clone, Deserialize)]
 pub struct OperatorVersionResult {
     pub status: u32,
     pub fus_version: u32,
