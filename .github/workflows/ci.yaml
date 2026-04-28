@@ -5,11 +5,18 @@ on:
   push:
     branches:
         - main
+  pull_request:
+    branches:
+        - main
 
 jobs:
-  ci:
-    name: "C.I"
-    runs-on: ubuntu-latest
+  build:
+    name: "Build (${{matrix.os}})"
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, ubuntu-24.04]
+    runs-on: ${{matrix.os}}
     steps:
       - uses: actions/checkout@v4
 
@@ -19,5 +26,28 @@ jobs:
       - name: Install Rust
         run: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 
-      - name: Build ubuntu version
+      - name: Build
         run: cargo build --release --locked
+
+  lint:
+    name: "Lint (informational)"
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install packages
+        run: sudo apt install libatk1.0-dev pkg-config libgtk-3-dev libudev-dev
+
+      - name: Install Rust + clippy + rustfmt
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+          "$HOME/.cargo/bin/rustup" component add clippy rustfmt
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+
+      - name: cargo fmt --check
+        continue-on-error: true
+        run: cargo fmt --all -- --check
+
+      - name: cargo clippy
+        continue-on-error: true
+        run: cargo clippy --release --locked --all-targets
