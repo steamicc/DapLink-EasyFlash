@@ -36,7 +36,7 @@ La procédure de chargement de DapLink est la suivante :
   5. _(optionnel)_ Transfert du programme de test 
 
 ### Stack Wireless
-La stack est flashé sur le co-processeur à l'aide du [FUS](https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WB_FUS) et d'un programme appelé `operator`, ce dernier fait le relais entre des commandes haut niveau de l'`operator` et le FUS. L'`operator` est précompilé, mais **n'est pas** la version officiel de ST Microelectronics, les sources sont disponible à cette [addresse](https://github.com/steamicc/codal-steami-samples/tree/main/samples/Peripherals/FUS_WS_Operator) ([https://github.com/steamicc/codal-steami-samples/tree/main/samples/Peripherals/FUS_WS_Operator](https://github.com/steamicc/codal-steami-samples/tree/main/samples/Peripherals/FUS_WS_Operator)).
+La stack est flashé sur le co-processeur à l'aide du [FUS](https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WB_FUS) et d'un programme appelé `operator`, ce dernier fait le relais entre des commandes haut niveau de l'`operator` et le FUS. L'`operator` est précompilé, mais **n'est pas** la version officiel de ST Microelectronics, les sources sont disponible à cette [adresse](https://github.com/steamicc/codal-steami-samples/tree/main/samples/Peripherals/FUS_WS_Operator) ([https://github.com/steamicc/codal-steami-samples/tree/main/samples/Peripherals/FUS_WS_Operator](https://github.com/steamicc/codal-steami-samples/tree/main/samples/Peripherals/FUS_WS_Operator)).
 
 ![screenshot](doc/screenshot.png)
 
@@ -111,14 +111,7 @@ Le programme offre une interface simplifiée, permettant de selectionner les fic
 2. Installer `openocd`
 3. Cloner ou télécharger le repository `git clone https://github.com/steamicc/DapLink-EasyFlash.git`
 4. Entrer dans le dossier `cd DapLink-EasyFlash`
-5. L'application cherche `configs/` et `wireless_stack/` à côté de son
-   exécutable, donc avant le premier `cargo run`, faire des liens
-   symboliques vers le dossier de build :
-   ```
-   mkdir -p target/debug && ln -s "$PWD/configs" target/debug/ && ln -s "$PWD/wireless_stack" target/debug/
-   ```
-   (Pour un build release, utiliser `target/release/`.)
-6. Éxécuter la commande `cargo run` à la racine du projet.
+5. Éxécuter la commande `cargo run` à la racine du projet.
 
 
 ## Test files
