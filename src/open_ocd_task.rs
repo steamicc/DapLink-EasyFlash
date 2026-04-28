@@ -1,13 +1,15 @@
 use std::{
     collections::VecDeque,
-    fs, i32,
+    fs,
     io::{BufRead, BufReader},
     path::{Path, PathBuf},
     process::{Command, ExitStatus, Stdio},
     sync::{Arc, Mutex},
     thread,
+    time::Duration,
 };
 
+use async_io::Timer;
 use iced::futures::{channel::mpsc::Sender, SinkExt};
 
 use crate::{
@@ -144,37 +146,31 @@ where
     let mutex_messages: Arc<Mutex<VecDeque<LogType>>> = Arc::new(Mutex::new(VecDeque::new()));
 
     let thread_message = mutex_messages.clone();
-    let thread_stdout = thread::spawn(move || {
+    let thread_stderr = thread::spawn(move || {
         let lines = BufReader::new(stderr).lines();
 
         for line in lines {
-            match line {
-                Ok(line) => {
-                    println!("[OPEN OCD] {line}");
-                    thread_message
-                        .lock()
-                        .unwrap()
-                        .push_back(LogType::Info(format!("    {line}")));
-                }
-                Err(_) => (),
+            if let Ok(line) = line {
+                eprintln!("[OPEN OCD] {line}");
+                thread_message
+                    .lock()
+                    .unwrap()
+                    .push_back(LogType::Info(format!("    {line}")));
             }
         }
     });
 
     let thread_message = mutex_messages.clone();
-    let thread_stderr = thread::spawn(move || {
+    let thread_stdout = thread::spawn(move || {
         let lines = BufReader::new(stdout).lines();
 
         for line in lines {
-            match line {
-                Ok(line) => {
-                    eprintln!("[OPEN OCD] {line}");
-                    thread_message
-                        .lock()
-                        .unwrap()
-                        .push_back(LogType::Error(format!("    {line}")));
-                }
-                Err(_) => (),
+            if let Ok(line) = line {
+                println!("[OPEN OCD] {line}");
+                thread_message
+                    .lock()
+                    .unwrap()
+                    .push_back(LogType::Info(format!("    {line}")));
             }
         }
     });
@@ -203,6 +199,8 @@ where
             let _ = thread_stderr.join();
             break;
         }
+
+        Timer::after(Duration::from_millis(50)).await;
     }
 
     if let Some(ref mut s) = sender {

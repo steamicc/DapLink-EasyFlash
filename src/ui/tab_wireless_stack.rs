@@ -4,9 +4,10 @@ use std::{
     future::Future,
     io::{self, Write},
     path::{Path, PathBuf},
-    thread::{self, sleep},
     time::Duration,
 };
+
+use async_io::Timer;
 
 use iced::{
     alignment::Horizontal,
@@ -73,10 +74,11 @@ pub struct TabWirelessStack {
     is_readonly: bool,
 }
 
-const ALL_STACK: [WirelessStackFile; 20] = [
+const ALL_STACK: [WirelessStackFile; 21] = [
     WirelessStackFile::BleHciAdvScan,
     WirelessStackFile::BleHciExt,
     WirelessStackFile::BleHci,
+    WirelessStackFile::BleLld,
     WirelessStackFile::BleMac,
     WirelessStackFile::BleStackFullExt,
     WirelessStackFile::BleStackFull,
@@ -239,7 +241,7 @@ impl TabWirelessStack {
 
         let serial = self.serial_selected.as_ref().unwrap().clone();
         Self::message_runner(|mut o| async move {
-            thread::sleep(Duration::from_secs(1));
+            Timer::after(Duration::from_secs(1)).await;
 
             let mut port = match Self::open_port(&serial.port) {
                 Ok(p) => p,
@@ -255,7 +257,7 @@ impl TabWirelessStack {
                 return;
             }
 
-            let line = match Self::send_and_read_serial(&mut port, VERSION_CMD, None, None) {
+            let line = match Self::send_and_read_serial(&mut port, VERSION_CMD, None, None).await {
                 Ok(s) => s,
                 Err(e) => {
                     Self::error_handle(&mut o, e).await;
@@ -298,8 +300,6 @@ impl TabWirelessStack {
                 Self::send_step(&mut o, FwStep::Ready).await;
                 return;
             }
-
-            if let None = fus {}
 
             match fus {
                 Some(file) => Self::send_step(&mut o, FwStep::StepFlashFUS(file.to_string())).await,
@@ -390,8 +390,8 @@ impl TabWirelessStack {
 
             let mut success = false;
             for attempt in 0..3 {
-                thread::sleep(Duration::from_secs(1));
-                match Self::send_and_read_serial(&mut port, DELETE_CMD, None, None) {
+                Timer::after(Duration::from_secs(1)).await;
+                match Self::send_and_read_serial(&mut port, DELETE_CMD, None, None).await {
                     Ok(_) => {
                         success = true;
                         break;
@@ -630,7 +630,7 @@ impl TabWirelessStack {
 
     /// Sends data over serial, wait a certain amount of time (1 sec by default, if `wait_time` is `None`) and read data from serial.
     /// The number of bytes read is retruned.
-    fn send_and_read_serial(
+    async fn send_and_read_serial(
         port: &mut Box<dyn SerialPort>,
         send_buf: &[u8],
         wait_time: Option<Duration>,
@@ -648,7 +648,7 @@ impl TabWirelessStack {
             port.set_timeout(t.clone()).map_err(|x| x.to_string())?;
         }
 
-        sleep(wait_time.unwrap_or(Duration::from_secs(1)));
+        Timer::after(wait_time.unwrap_or(Duration::from_secs(1))).await;
 
         let read = Self::read_line(port, None);
 
@@ -709,7 +709,7 @@ impl TabWirelessStack {
         let mut success = false;
         for nb in 0..2 {
             for attempt in 0..3 {
-                match Self::send_and_read_serial(port, STATUS_CMD, None, None) {
+                match Self::send_and_read_serial(port, STATUS_CMD, None, None).await {
                     Ok(_) => {
                         success = true;
                         break;
@@ -744,7 +744,7 @@ impl TabWirelessStack {
             }
         };
 
-        thread::sleep(Duration::from_secs(5));
+        Timer::after(Duration::from_secs(5)).await;
 
         port.write(UPGRADE_CMD)
             .map_err(|e| format!("Failed to write serial. Error: {e}"))?;

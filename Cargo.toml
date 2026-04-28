@@ -4,6 +4,7 @@ version = "0.2.0"
 edition = "2021"
 
 [dependencies]
+async-io = "2"
 directories = "5.0.1"
 iced = "0.13.1"
 iced_aw = { version = "0.11.0", default-features = false, features = ["grid", "number_input", "tabs", "tab_bar"] }
