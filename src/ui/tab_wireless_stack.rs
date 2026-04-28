@@ -660,23 +660,28 @@ impl TabWirelessStack {
         }
     }
 
+    /// Sends STATUS twice. STM32WB's `SHCI_C2_FUS_GetState` (which the
+    /// operator runs in response) swaps the CPU2 from the wireless stack
+    /// to the FUS on the *first* call and only returns the real state on
+    /// the *second*. We need both round-trips to succeed; the responses
+    /// themselves are not used here.
     async fn send_double_status(
         port: &mut Box<dyn SerialPort>,
         o: &mut Sender<TabWsMessage>,
     ) -> Result<(), String> {
-        let mut success = false;
         for nb in 0..2 {
+            let mut pass_success = false;
             for attempt in 0..3 {
                 match Self::send_and_read_serial(port, STATUS_CMD, None, None).await {
                     Ok(_) => {
-                        success = true;
+                        pass_success = true;
                         break;
                     }
                     Err(e) => {
                         Self::send_log(
                             o,
                             LogType::Warning(format!(
-                                "STATUS #{}, attempt #{} failed (Error: {e}.",
+                                "STATUS #{}, attempt #{} failed (Error: {e}).",
                                 nb + 1,
                                 attempt + 1
                             )),
@@ -685,13 +690,13 @@ impl TabWirelessStack {
                     }
                 }
             }
+
+            if !pass_success {
+                return Err("Unable to unlock FUS.".into());
+            }
         }
 
-        if success {
-            Ok(())
-        } else {
-            Err("Unable to unlock FUS.".into())
-        }
+        Ok(())
     }
 
     async fn fus_upgrade_cmd(port_info: &SerialPortInfo) -> Result<(), String> {
