@@ -179,11 +179,14 @@ where
     let output: ExitStatus;
     let mut tmp_deque: VecDeque<LogType> = VecDeque::new();
 
-    loop {
-        if let Ok(mut deque) = mutex_messages.lock() {
-            tmp_deque = deque.clone();
-            deque.clear();
+    let drain = |tmp_deque: &mut VecDeque<LogType>, mutex: &Arc<Mutex<VecDeque<LogType>>>| {
+        if let Ok(mut deque) = mutex.lock() {
+            tmp_deque.extend(deque.drain(..));
         }
+    };
+
+    loop {
+        drain(&mut tmp_deque, &mutex_messages);
 
         while let Some(msg) = tmp_deque.pop_front() {
             if let Some(ref mut s) = sender {
@@ -197,6 +200,20 @@ where
             output = status;
             let _ = thread_stdout.join();
             let _ = thread_stderr.join();
+
+            // Final drain: the reader threads may have pushed lines after the
+            // last in-loop drain and before they finished. Without this pass,
+            // the very last OpenOCD output (often the diagnostic on failure)
+            // would be silently dropped.
+            drain(&mut tmp_deque, &mutex_messages);
+            while let Some(msg) = tmp_deque.pop_front() {
+                if let Some(ref mut s) = sender {
+                    let _ = s.send(MSG::log(msg)).await;
+                } else {
+                    logs.push(msg);
+                }
+            }
+
             break;
         }
 
