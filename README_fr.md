@@ -111,7 +111,14 @@ Le programme offre une interface simplifiée, permettant de selectionner les fic
 2. Installer `openocd`
 3. Cloner ou télécharger le repository `git clone https://github.com/steamicc/DapLink-EasyFlash.git`
 4. Entrer dans le dossier `cd DapLink-EasyFlash`
-5. Éxécuter la commande `cargo run` à la racine du projet.
+5. L'application cherche `configs/` et `wireless_stack/` à côté de son
+   exécutable, donc avant le premier `cargo run`, faire des liens
+   symboliques vers le dossier de build :
+   ```
+   mkdir -p target/debug && ln -s "$PWD/configs" target/debug/ && ln -s "$PWD/wireless_stack" target/debug/
+   ```
+   (Pour un build release, utiliser `target/release/`.)
+6. Éxécuter la commande `cargo run` à la racine du projet.
 
 
 ## Test files
