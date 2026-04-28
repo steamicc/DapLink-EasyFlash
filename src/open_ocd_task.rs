@@ -20,7 +20,7 @@ use crate::{
 };
 
 pub const UNLOCK_SCRIPT_FILENAME: &str = "f1x-unlock.cfg";
-pub const ERASE_SCRIPT_FILENAME: &str = "f1x-erase.cfg";
+pub const ERASE_SCRIPT_FILENAME: &str = "f1x-mass-erase.cfg";
 pub const FLASH_SCRIPT_FILENAME: &str = "f1x-flash.cfg";
 pub const WB55_CONFIG: &str = "wb5x.cfg";
 
