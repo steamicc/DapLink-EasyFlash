@@ -46,16 +46,7 @@ impl MainWindow {
                             Ok(settings_dir) => {
                                 let fields_file = settings_dir.join(SETTINGS_FILE);
                                 match fs::read(fields_file) {
-                                    Ok(content) => match serde_json::from_slice::<Self>(&content) {
-                                        Ok(obj) => {
-                                            self.tab_daplink = obj.tab_daplink;
-                                            self.tab_ws = obj.tab_ws;
-                                            println!("Settings loaded !");
-                                        }
-                                        Err(e) => {
-                                            eprintln!("Failed to deserialize settings. Error: {e}");
-                                        }
-                                    },
+                                    Ok(content) => self.load_settings(&content),
                                     Err(e) => eprintln!("Failed to open settings file ({e})"),
                                 }
                             }
@@ -111,5 +102,28 @@ impl MainWindow {
 
     pub fn application_subscription(&self) -> Subscription<Message> {
         event::listen().map(Message::ApplicationEvent)
+    }
+
+    /// Deserialize the on-disk settings, with a fallback to the legacy 0.1.x
+    /// schema (a flat `EasyDapLink` serialized at the top level — now mapped
+    /// onto `tab_daplink`). Successful migrations get rewritten in the new
+    /// shape on the next `CloseRequested`.
+    fn load_settings(&mut self, content: &[u8]) {
+        match serde_json::from_slice::<Self>(content) {
+            Ok(obj) => {
+                self.tab_daplink = obj.tab_daplink;
+                self.tab_ws = obj.tab_ws;
+                println!("Settings loaded !");
+                return;
+            }
+            Err(new_err) => {
+                if let Ok(legacy) = serde_json::from_slice::<TabDaplink>(content) {
+                    self.tab_daplink = legacy;
+                    println!("Legacy settings migrated to the new schema");
+                    return;
+                }
+                eprintln!("Failed to deserialize settings. Error: {new_err}");
+            }
+        }
     }
 }
