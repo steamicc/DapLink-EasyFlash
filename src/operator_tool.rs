@@ -19,9 +19,9 @@ pub fn operator_error_string(error_code: u32) -> &'static str {
     match error_code{
         0x00 => "FUS_STATE_NO_ERROR => No error occurred.",
         0x01 => "FUS_STATE_IMG_NOT_FOUND => Firmware/FUS upgrade requested but no image found. (such as image header corrupted or flash memory corrupted)",
-        0x02 => "FUS_SATE_IMC_CORRUPT => Firmware/FUS upgrade requested, image found, authentic but not integer (corruption on the data)",
+        0x02 => "FUS_STATE_IMC_CORRUPT => Firmware/FUS upgrade requested, image found, authentic but not integer (corruption on the data)",
         0x03 => "FUS_STATE_IMG_NOT_AUTHENTIC => Firmware/FUS upgrade requested, image found, but its signature is not valid (wrong signature, wrong signature header)",
-        0x04 => "FUS_SATE_NO_ENOUGH_SPACE => Firmware/FUS upgrade requested, image found and authentic, but there is no enough space to install it due to the already installed image. Install the stack in a lower location then try again.",
+        0x04 => "FUS_STATE_NO_ENOUGH_SPACE => Firmware/FUS upgrade requested, image found and authentic, but there is no enough space to install it due to the already installed image. Install the stack in a lower location then try again.",
         0x05 => "FUS_IMAGE_USRABORT => Operation aborted by user or power off occurred",
         0x06 => "FUS_IMAGE_ERSERROR => Flash Erase Error",
         0x07 => "FUS_IMAGE_WRTERROR => Flash Write Error",
@@ -29,7 +29,7 @@ pub fn operator_error_string(error_code: u32) -> &'static str {
         0x09 => "FUS_AUTH_TAG_CUST_NOTFOUND => Customer Authentication tag not found in the image",
         0x0A => "FUS_AUTH_KEY_LOCKED => The key that the user tries to load is currently locked",
         0x11 => "FUS_FW_ROLLBACK_ERROR",
-        _ => "Unknow code"
+        _ => "Unknown code"
     }
 }
 
