@@ -376,7 +376,7 @@ impl TabDaplink {
                 .spacing(8),
             ),
             form_row(
-                "(Optionnal) User program",
+                "(Optional) User program",
                 row![
                     text_input(
                         "User program",
