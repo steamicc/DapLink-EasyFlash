@@ -51,8 +51,6 @@ impl MainWindow {
                                         Ok(obj) => {
                                             self.tab_daplink = obj.tab_daplink;
                                             self.tab_ws = obj.tab_ws;
-
-                                            self.tab_ws.refresh_serial_ports();
                                             println!("Settings loaded !");
                                         }
                                         Err(e) => {
@@ -64,6 +62,7 @@ impl MainWindow {
                             }
                             Err(e) => eprintln!("Failed to get settings dirs (Error: {e}"),
                         };
+                        self.tab_ws.refresh_serial_ports();
                         return Task::none();
                     }
                     iced::window::Event::CloseRequested => {
