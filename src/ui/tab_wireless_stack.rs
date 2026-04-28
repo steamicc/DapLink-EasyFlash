@@ -103,6 +103,13 @@ const ALL_STACK: [WirelessStackFile; 21] = [
 ];
 
 impl TabWirelessStack {
+    /// True while a flash sequence is running. Used by `MainWindow` to
+    /// suppress window-close requests so the OpenOCD child or the FUS
+    /// upgrade isn't killed mid-operation.
+    pub fn is_busy(&self) -> bool {
+        self.is_readonly
+    }
+
     pub fn view(&self) -> Element<Message> {
         let grid_fields = grid!(
             grid_row!(

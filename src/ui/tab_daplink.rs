@@ -38,6 +38,13 @@ pub struct TabDaplink {
 }
 
 impl TabDaplink {
+    /// True while a flash sequence (or a file browse) is running. Used by
+    /// `MainWindow` to suppress window-close requests during a flash so the
+    /// OpenOCD child isn't killed mid-operation.
+    pub fn is_busy(&self) -> bool {
+        self.is_readonly
+    }
+
     pub fn update(&mut self, message: TabDaplinkMessage) -> Task<Message> {
         match message {
             TabDaplinkMessage::LogMessage(log) => self.log_widget.push(log),
