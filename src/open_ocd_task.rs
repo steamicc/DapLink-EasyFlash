@@ -123,7 +123,7 @@ where
         .into_string()
         .map_err(|_| "Failed to convert tmp_dir to string.")?;
 
-    let cmd = cmd.args(&[
+    cmd.args(&[
         "-s",
         &config_folder,
         "-s",
@@ -131,6 +131,19 @@ where
         "-s",
         &ws_foler,
     ]);
+
+    // The xpack-bundled OpenOCD ships its standard scripts alongside the
+    // executable in `<exe_dir>/scripts/`. Our .cfg files reference these via
+    // `source [find interface/...]`, which only resolves through OpenOCD's
+    // search path — add the directory if it exists.
+    let scripts_folder = dirs::get_exe_dir()?.join("scripts");
+    if scripts_folder.is_dir() {
+        let scripts_str = scripts_folder
+            .into_os_string()
+            .into_string()
+            .map_err(|_| "Failed to convert scripts path to string")?;
+        cmd.args(&["-s", &scripts_str]);
+    }
 
     let mut child = cmd
         .stdout(Stdio::piped())
