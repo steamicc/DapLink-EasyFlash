@@ -602,7 +602,7 @@ impl TabWirelessStack {
                 }
             });
 
-            self.serial_selected = Some(self.serial_available_port[0].clone())
+            self.serial_selected = self.serial_available_port.first().cloned();
         }
     }
 
@@ -785,17 +785,13 @@ impl TabWirelessStack {
 
 impl Default for TabWirelessStack {
     fn default() -> Self {
-        let mut s = Self {
+        Self {
             fw_selected: Default::default(),
             serial_available_port: Default::default(),
             serial_selected: Default::default(),
             log: Default::default(),
             is_readonly: false,
-        };
-
-        s.refresh_serial_ports();
-
-        s
+        }
     }
 }
 
