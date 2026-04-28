@@ -243,9 +243,7 @@ impl TabWirelessStack {
                     None => {
                         Self::send_log(
                             &mut o,
-                            LogType::Error(
-                                "Flash failed: OpenOCD terminated by signal".into(),
-                            ),
+                            LogType::Error("Flash failed: OpenOCD terminated by signal".into()),
                         )
                         .await;
                         Self::send_step(&mut o, FwStep::Ready).await;
@@ -365,9 +363,7 @@ impl TabWirelessStack {
                     None => {
                         Self::send_log(
                             &mut o,
-                            LogType::Error(
-                                "Flash failed: OpenOCD terminated by signal".into(),
-                            ),
+                            LogType::Error("Flash failed: OpenOCD terminated by signal".into()),
                         )
                         .await;
                         Self::send_step(&mut o, FwStep::Ready).await;
@@ -472,9 +468,7 @@ impl TabWirelessStack {
                     None => {
                         Self::send_log(
                             &mut o,
-                            LogType::Error(
-                                "Flash failed: OpenOCD terminated by signal".into(),
-                            ),
+                            LogType::Error("Flash failed: OpenOCD terminated by signal".into()),
                         )
                         .await;
                         Self::send_step(&mut o, FwStep::Ready).await;
