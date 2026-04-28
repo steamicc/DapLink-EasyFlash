@@ -5,7 +5,9 @@ use iced::{
     widget::{button, center, column, container, opaque, row, stack, text, text_input},
     Element, Length, Task, Theme,
 };
-use iced_aw::{grid, grid_row, number_input};
+use iced_aw::number_input;
+
+use super::form::{form, form_row};
 use serde::{Deserialize, Serialize};
 
 use crate::{disk_tool, log_entries::LogType, open_ocd_task, utils};
@@ -349,8 +351,8 @@ impl TabDaplink {
     }
 
     pub fn view(&self) -> Element<Message> {
-        let grid_files = grid!(
-            grid_row!(
+        let grid_files = form(vec![
+            form_row(
                 "Bootloader file",
                 row![
                     text_input(
@@ -359,22 +361,22 @@ impl TabDaplink {
                     )
                     .on_input(|s| Message::DapLink(TabDaplinkMessage::InputBootloaderPath(s)))
                     .width(Length::Fill),
-                    button("...").on_press(Message::DapLink(TabDaplinkMessage::BrowseBootloader))
+                    button("...").on_press(Message::DapLink(TabDaplinkMessage::BrowseBootloader)),
                 ]
-                .spacing(8)
+                .spacing(8),
             ),
-            grid_row!(
+            form_row(
                 "Firmware file",
                 row![
                     text_input("Firmware", self.firmware_path.to_str().unwrap_or_default())
                         .on_input(|s| Message::DapLink(TabDaplinkMessage::InputFirmwarePath(s)))
                         .width(Length::Fill),
-                    button("...").on_press(Message::DapLink(TabDaplinkMessage::BrowseFirmware))
+                    button("...").on_press(Message::DapLink(TabDaplinkMessage::BrowseFirmware)),
                 ]
-                .spacing(8)
+                .spacing(8),
             ),
-            grid_row!(
-                "(Optionnal) User program",
+            form_row(
+                "(Optional) User program",
                 row![
                     text_input(
                         "User program",
@@ -382,38 +384,28 @@ impl TabDaplink {
                     )
                     .on_input(|s| Message::DapLink(TabDaplinkMessage::InputUserFilePath(s)))
                     .width(Length::Fill),
-                    button("...").on_press(Message::DapLink(TabDaplinkMessage::BrowseUserFile))
+                    button("...").on_press(Message::DapLink(TabDaplinkMessage::BrowseUserFile)),
                 ]
-                .spacing(8)
+                .spacing(8),
             ),
-        )
-        .width(Length::Fill)
-        .column_spacing(8)
-        .row_spacing(8)
-        .column_widths(&[Length::Shrink, Length::Fill])
-        .padding(8);
+        ]);
 
-        let grid_settings = grid!(
-            grid_row!(
+        let grid_settings = form(vec![
+            form_row(
                 "Target mount name",
                 text_input("STeaMi, DIS_L4IOT, ...", &self.target_name)
                     .on_input(|s| Message::DapLink(TabDaplinkMessage::TargetNameChanged(s)))
                     .width(200),
             ),
-            grid_row!(
+            form_row(
                 "Timeout (s) for mount points",
-                number_input(self.target_waiting_time, TIMEOUT_MIN..=TIMEOUT_MAX, |x| {
+                number_input(&self.target_waiting_time, TIMEOUT_MIN..=TIMEOUT_MAX, |x| {
                     Message::DapLink(TabDaplinkMessage::TimeoutChanged(x))
                 })
                 .step(1)
-                .width(Length::Fill)
+                .width(Length::Fill),
             ),
-        )
-        .width(Length::Fill)
-        .column_spacing(8)
-        .row_spacing(8)
-        .column_widths(&[Length::Shrink, Length::Fill])
-        .padding(8);
+        ]);
 
         let start_button = button(
             text("Start 🚀")
