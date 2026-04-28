@@ -138,11 +138,7 @@ where
     // search path — add the directory if it exists.
     let scripts_folder = dirs::get_exe_dir()?.join("scripts");
     if scripts_folder.is_dir() {
-        let scripts_str = scripts_folder
-            .into_os_string()
-            .into_string()
-            .map_err(|_| "Failed to convert scripts path to string")?;
-        cmd.args(&["-s", &scripts_str]);
+        cmd.arg("-s").arg(&scripts_folder);
     }
 
     let mut child = cmd
