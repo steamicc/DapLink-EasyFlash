@@ -40,10 +40,10 @@ fn main() -> iced::Result {
     };
     dirs::set_exe_dir(exe_dir);
 
-    iced::application(MainWindow::title, MainWindow::update, MainWindow::view)
+    iced::application(MainWindow::default, MainWindow::update, MainWindow::view)
+        .title(MainWindow::title)
         .theme(MainWindow::theme)
         .settings(Settings::default())
-        .font(iced_fonts::REQUIRED_FONT_BYTES)
         .window(window::Settings {
             size: Size {
                 width: 550.0,

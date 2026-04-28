@@ -1,8 +1,6 @@
 use std::fs;
 
-use iced::{
-    advanced::graphics::futures::event, widget::column, Element, Event, Subscription, Task, Theme,
-};
+use iced::{event, widget::column, Element, Event, Subscription, Task, Theme};
 use iced_aw::{TabBar, TabLabel};
 use serde::{Deserialize, Serialize};
 
@@ -17,8 +15,6 @@ const SETTINGS_FILE: &str = "fields.json";
 #[derive(Default, Debug, Serialize, Deserialize)]
 pub struct MainWindow {
     #[serde(skip)]
-    theme: Theme,
-    #[serde(skip)]
     active_tab: u16,
     tab_daplink: TabDaplink,
     tab_ws: TabWirelessStack,
@@ -30,7 +26,7 @@ impl MainWindow {
     }
 
     pub fn theme(&self) -> Theme {
-        self.theme.clone()
+        Theme::Light
     }
 
     pub fn update(&mut self, message: Message) -> Task<Message> {
@@ -39,7 +35,10 @@ impl MainWindow {
             Message::WirelessStack(ws_message) => self.tab_ws.update(ws_message),
 
             Message::ApplicationEvent(event) => match event {
-                Event::Keyboard(_) | Event::Mouse(_) | Event::Touch(_) => Task::none(),
+                Event::Keyboard(_)
+                | Event::Mouse(_)
+                | Event::Touch(_)
+                | Event::InputMethod(_) => Task::none(),
                 Event::Window(event) => match event {
                     iced::window::Event::Opened { .. } => {
                         match dirs::get_settings_dir() {
@@ -82,7 +81,7 @@ impl MainWindow {
                             }
                             Err(e) => eprintln!("Failed to get settings dirs (Error: {e}"),
                         };
-                        return iced::window::get_latest().and_then(iced::window::close);
+                        return iced::window::latest().and_then(iced::window::close);
                     }
                     _ => Task::none(),
                 },
