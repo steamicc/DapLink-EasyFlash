@@ -457,7 +457,8 @@ impl TabDaplink {
             return false;
         }
 
-        if !self.bootloader_path.exists() && !self.user_file_path.to_str().unwrap().is_empty() {
+        let user_path_set = self.user_file_path.as_os_str().len() > 0;
+        if user_path_set && !self.user_file_path.exists() {
             self.log_widget.push(LogType::Warning(
                 "Invalide user file (no such file or directory).".to_owned(),
             ));
