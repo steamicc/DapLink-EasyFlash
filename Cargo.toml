@@ -2,6 +2,8 @@
 name = "easy_flash_daplink"
 version = "0.2.0"
 edition = "2021"
+# Pinned to the highest MSRV among our direct deps (currently iced 0.13).
+rust-version = "1.80"
 
 [dependencies]
 async-io = "2"
