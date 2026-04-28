@@ -61,6 +61,8 @@ pub struct SerialPortInfo {
     product: Option<String>,
 }
 
+const MAX_FUS_UPGRADE_ATTEMPTS: u32 = 3;
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct TabWirelessStack {
     fw_selected: WirelessStackFile,
@@ -72,6 +74,8 @@ pub struct TabWirelessStack {
     log: LogWidget,
     #[serde(skip)]
     is_readonly: bool,
+    #[serde(skip)]
+    fus_upgrade_attempts: u32,
 }
 
 const ALL_STACK: [WirelessStackFile; 21] = [
@@ -205,6 +209,7 @@ impl TabWirelessStack {
         }
 
         self.is_readonly = true;
+        self.fus_upgrade_attempts = 0;
         self.log
             .push(LogType::Info("Start flashing...".to_string()));
 
@@ -309,7 +314,19 @@ impl TabWirelessStack {
     }
 
     fn step_flash_fus(&mut self, file: String) -> Task<Message> {
-        self.log.push(LogType::Info("Flash FUS".to_string()));
+        self.fus_upgrade_attempts += 1;
+        if self.fus_upgrade_attempts > MAX_FUS_UPGRADE_ATTEMPTS {
+            self.log.push(LogType::Error(format!(
+                "FUS upgrade did not converge after {MAX_FUS_UPGRADE_ATTEMPTS} attempts. Aborting."
+            )));
+            self.is_readonly = false;
+            return Task::none();
+        }
+
+        self.log.push(LogType::Info(format!(
+            "Flash FUS (attempt {}/{})",
+            self.fus_upgrade_attempts, MAX_FUS_UPGRADE_ATTEMPTS
+        )));
 
         let serial = self.serial_selected.as_ref().unwrap().clone();
         Self::message_runner(|mut o| async move {
@@ -754,6 +771,7 @@ impl Default for TabWirelessStack {
             serial_selected: Default::default(),
             log: Default::default(),
             is_readonly: false,
+            fus_upgrade_attempts: 0,
         }
     }
 }
