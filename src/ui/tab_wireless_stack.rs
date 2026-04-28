@@ -313,34 +313,7 @@ impl TabWirelessStack {
 
         let serial = self.serial_selected.as_ref().unwrap().clone();
         Self::message_runner(|mut o| async move {
-            let path_op = match Self::path_ws_file("wb55_operator_no_end.hex") {
-                Ok(path) => path,
-                Err(e) => {
-                    Self::error_handle(&mut o, e).await;
-                    return;
-                }
-            };
-
-            let path_fus = match Self::path_ws_file(&file) {
-                Ok(path) => path,
-                Err(e) => {
-                    Self::error_handle(&mut o, e).await;
-                    return;
-                }
-            };
-
-            let path_result = match dirs::get_tmp_dir() {
-                Ok(mut path) => {
-                    path.push("merge.hex");
-                    path
-                }
-                Err(e) => {
-                    Self::error_handle(&mut o, e).await;
-                    return;
-                }
-            };
-
-            if let Err(e) = Self::merge_ws_hex(&path_op, &path_fus, &path_result) {
+            if let Err(e) = Self::prepare_merged_hex(&file) {
                 Self::error_handle(&mut o, e).await;
                 return;
             }
@@ -433,34 +406,7 @@ impl TabWirelessStack {
         let serial = self.serial_selected.as_ref().unwrap().clone();
         let fw = wireless_stack_config(self.fw_selected);
         Self::message_runner(move |mut o| async move {
-            let path_op = match Self::path_ws_file("wb55_operator_no_end.hex") {
-                Ok(path) => path,
-                Err(e) => {
-                    Self::error_handle(&mut o, e).await;
-                    return;
-                }
-            };
-
-            let path_fw = match Self::path_ws_file(fw) {
-                Ok(path) => path,
-                Err(e) => {
-                    Self::error_handle(&mut o, e).await;
-                    return;
-                }
-            };
-
-            let path_result = match dirs::get_tmp_dir() {
-                Ok(mut path) => {
-                    path.push("merge.hex");
-                    path
-                }
-                Err(e) => {
-                    Self::error_handle(&mut o, e).await;
-                    return;
-                }
-            };
-
-            if let Err(e) = Self::merge_ws_hex(&path_op, &path_fw, &path_result) {
+            if let Err(e) = Self::prepare_merged_hex(fw) {
                 Self::error_handle(&mut o, e).await;
                 return;
             }
@@ -500,7 +446,7 @@ impl TabWirelessStack {
     where
         F: Future<Output = ()> + std::marker::Send + 'static,
     {
-        Task::run(channel(1, f), |x| Message::WirelessStack(x))
+        Task::run(channel(16, f), |x| Message::WirelessStack(x))
     }
 
     fn merge_ws_hex(first: &Path, second: &Path, result: &Path) -> Result<(), String> {
@@ -568,6 +514,18 @@ impl TabWirelessStack {
         let mut path = dirs::get_wireless_stack_dir()?;
         path.push(filename);
         Ok(path)
+    }
+
+    /// Prepends `wb55_operator_no_end.hex` to the given firmware file in
+    /// `<tmp>/merge.hex` so OpenOCD can flash both in one shot. The boundary
+    /// works because the operator hex has no Intel HEX EOF record.
+    fn prepare_merged_hex(target_filename: &str) -> Result<PathBuf, String> {
+        let path_op = Self::path_ws_file("wb55_operator_no_end.hex")?;
+        let path_target = Self::path_ws_file(target_filename)?;
+        let mut path_result = dirs::get_tmp_dir()?;
+        path_result.push("merge.hex");
+        Self::merge_ws_hex(&path_op, &path_target, &path_result)?;
+        Ok(path_result)
     }
 
     pub fn refresh_serial_ports(&mut self) {

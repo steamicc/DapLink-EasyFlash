@@ -15,7 +15,6 @@ const WIRELESS_STACK_TAB: u16 = 1;
 const SETTINGS_FILE: &str = "fields.json";
 
 #[derive(Default, Debug, Serialize, Deserialize)]
-// #[derive(Default, Debug)]
 pub struct MainWindow {
     #[serde(skip)]
     theme: Theme,

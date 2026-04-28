@@ -125,8 +125,6 @@ where
 
     let cmd = cmd.args(&[
         "-s",
-        "scripts",
-        "-s",
         &config_folder,
         "-s",
         &tmp_folder,
