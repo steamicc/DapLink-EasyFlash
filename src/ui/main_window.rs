@@ -129,3 +129,78 @@ impl MainWindow {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const LEGACY_JSON: &[u8] = br#"{
+        "bootloader_path": "/tmp/bl.bin",
+        "firmware_path": "/tmp/fw.bin",
+        "user_file_path": "/tmp/user.bin",
+        "target_waiting_time": 7,
+        "target_name": "LEGACY-STEAMI"
+    }"#;
+
+    const NEW_JSON: &[u8] = br#"{
+        "tab_daplink": {
+            "bootloader_path": "/tmp/bl.bin",
+            "firmware_path": "/tmp/fw.bin",
+            "user_file_path": "/tmp/user.bin",
+            "target_waiting_time": 7,
+            "target_name": "LEGACY-STEAMI"
+        },
+        "tab_ws": {
+            "fw_selected": "BleHciExt"
+        }
+    }"#;
+
+    #[test]
+    fn loads_new_schema() {
+        let mut w = MainWindow::default();
+        w.load_settings(NEW_JSON);
+        let s = serde_json::to_string(&w).unwrap();
+        assert!(s.contains(r#""target_name":"LEGACY-STEAMI""#));
+        assert!(s.contains(r#""fw_selected":"BleHciExt""#));
+    }
+
+    #[test]
+    fn legacy_schema_migrates_and_serializes_in_new_shape() {
+        let mut w = MainWindow::default();
+        w.load_settings(LEGACY_JSON);
+
+        // Re-serialize the way the CloseRequested handler does.
+        let s = serde_json::to_string(&w).unwrap();
+
+        // New shape: top-level keys for both tabs.
+        assert!(s.contains(r#""tab_daplink""#), "missing tab_daplink in: {s}");
+        assert!(s.contains(r#""tab_ws""#), "missing tab_ws in: {s}");
+
+        // Legacy data preserved under tab_daplink.
+        assert!(s.contains(r#""bootloader_path":"/tmp/bl.bin""#));
+        assert!(s.contains(r#""firmware_path":"/tmp/fw.bin""#));
+        assert!(s.contains(r#""user_file_path":"/tmp/user.bin""#));
+        assert!(s.contains(r#""target_waiting_time":7"#));
+        assert!(s.contains(r#""target_name":"LEGACY-STEAMI""#));
+    }
+
+    #[test]
+    fn malformed_json_keeps_defaults() {
+        let mut w = MainWindow::default();
+        w.load_settings(b"{ this is not json");
+        // No assertion on stderr — load_settings reports both errors via eprintln,
+        // exercised manually. The state must remain at defaults: serializing
+        // shouldn't carry any of the malformed input.
+        let s = serde_json::to_string(&w).unwrap();
+        assert!(!s.contains("LEGACY-STEAMI"));
+    }
+
+    #[test]
+    fn empty_content_keeps_defaults() {
+        let mut w = MainWindow::default();
+        w.load_settings(b"");
+        let s = serde_json::to_string(&w).unwrap();
+        assert!(s.contains(r#""tab_daplink""#));
+        assert!(s.contains(r#""tab_ws""#));
+    }
+}
