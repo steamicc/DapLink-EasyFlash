@@ -72,7 +72,7 @@ impl MainWindow {
                                     fields_file,
                                     serde_json::to_string_pretty(&self).unwrap_or("{}".into()),
                                 ) {
-                                    Ok(_) => println!("Settings succesfully saved"),
+                                    Ok(_) => println!("Settings successfully saved"),
                                     Err(e) => eprintln!("Failed to save settings ({e})"),
                                 }
                             }
@@ -101,7 +101,7 @@ impl MainWindow {
             DAPLINK_TAB => col.push(self.tab_daplink.view()),
             WIRELESS_STACK_TAB => col.push(self.tab_ws.view()),
             _ => {
-                eprintln!("Invalid selectd tab ({})", self.active_tab);
+                eprintln!("Invalid selected tab ({})", self.active_tab);
                 col
             }
         };
