@@ -227,15 +227,30 @@ impl TabWirelessStack {
 
         Self::message_runner(|mut o| async move {
             match open_ocd_task::flash_wb55("wb55_operator.hex", &mut o).await {
-                Ok(result) => {
-                    if result.code.is_some() && result.code.unwrap() != 0 {
-                        Self::send_log(&mut o, LogType::Error("Flash failed".into())).await;
-                        Self::send_step(&mut o, FwStep::Ready).await;
-                    } else {
+                Ok(result) => match result.code {
+                    Some(0) => {
                         Self::send_logs(&mut o, result.log).await;
                         Self::send_step(&mut o, FwStep::StepUpgradeFUS).await;
                     }
-                }
+                    Some(code) => {
+                        Self::send_log(
+                            &mut o,
+                            LogType::Error(format!("Flash failed (exit code {code})")),
+                        )
+                        .await;
+                        Self::send_step(&mut o, FwStep::Ready).await;
+                    }
+                    None => {
+                        Self::send_log(
+                            &mut o,
+                            LogType::Error(
+                                "Flash failed: OpenOCD terminated by signal".into(),
+                            ),
+                        )
+                        .await;
+                        Self::send_step(&mut o, FwStep::Ready).await;
+                    }
+                },
                 Err(e) => Self::error_handle(&mut o, e).await,
             }
         })
@@ -336,15 +351,29 @@ impl TabWirelessStack {
             }
 
             match open_ocd_task::flash_wb55("merge.hex", &mut o).await {
-                Ok(result) => {
-                    if result.code.is_some() && result.code.unwrap() != 0 {
-                        Self::send_log(&mut o, LogType::Error("Flash failed".into())).await;
+                Ok(result) => match result.code {
+                    Some(0) => Self::send_logs(&mut o, result.log).await,
+                    Some(code) => {
+                        Self::send_log(
+                            &mut o,
+                            LogType::Error(format!("Flash failed (exit code {code})")),
+                        )
+                        .await;
                         Self::send_step(&mut o, FwStep::Ready).await;
                         return;
-                    } else {
-                        Self::send_logs(&mut o, result.log).await;
                     }
-                }
+                    None => {
+                        Self::send_log(
+                            &mut o,
+                            LogType::Error(
+                                "Flash failed: OpenOCD terminated by signal".into(),
+                            ),
+                        )
+                        .await;
+                        Self::send_step(&mut o, FwStep::Ready).await;
+                        return;
+                    }
+                },
                 Err(e) => {
                     Self::error_handle(&mut o, e).await;
                     return;
@@ -352,7 +381,7 @@ impl TabWirelessStack {
             }
 
             Self::send_log(&mut o, LogType::Info("Send UPGRADE command".into())).await;
-            match Self::fus_upgrade_cmd(&serial).await {
+            match Self::fus_upgrade_cmd(&serial, &mut o).await {
                 Ok(_) => Self::send_step(&mut o, FwStep::StepUpgradeFUS).await,
                 Err(e) => Self::error_handle(&mut o, e).await,
             }
@@ -429,15 +458,29 @@ impl TabWirelessStack {
             }
 
             match open_ocd_task::flash_wb55("merge.hex", &mut o).await {
-                Ok(result) => {
-                    if result.code.is_some() && result.code.unwrap() != 0 {
-                        Self::send_log(&mut o, LogType::Error("Flash failed".into())).await;
+                Ok(result) => match result.code {
+                    Some(0) => Self::send_logs(&mut o, result.log).await,
+                    Some(code) => {
+                        Self::send_log(
+                            &mut o,
+                            LogType::Error(format!("Flash failed (exit code {code})")),
+                        )
+                        .await;
                         Self::send_step(&mut o, FwStep::Ready).await;
                         return;
-                    } else {
-                        Self::send_logs(&mut o, result.log).await;
                     }
-                }
+                    None => {
+                        Self::send_log(
+                            &mut o,
+                            LogType::Error(
+                                "Flash failed: OpenOCD terminated by signal".into(),
+                            ),
+                        )
+                        .await;
+                        Self::send_step(&mut o, FwStep::Ready).await;
+                        return;
+                    }
+                },
                 Err(e) => {
                     Self::error_handle(&mut o, e).await;
                     return;
@@ -445,7 +488,7 @@ impl TabWirelessStack {
             };
 
             Self::send_log(&mut o, LogType::Info("Send UPGRADE command".into())).await;
-            match Self::fus_upgrade_cmd(&serial).await {
+            match Self::fus_upgrade_cmd(&serial, &mut o).await {
                 Ok(_) => {
                     Self::send_log(
                         &mut o,
@@ -716,7 +759,10 @@ impl TabWirelessStack {
         Ok(())
     }
 
-    async fn fus_upgrade_cmd(port_info: &SerialPortInfo) -> Result<(), String> {
+    async fn fus_upgrade_cmd(
+        port_info: &SerialPortInfo,
+        sender: &mut Sender<TabWsMessage>,
+    ) -> Result<(), String> {
         let mut port = match Self::open_port(&port_info.port) {
             Ok(port) => port,
             Err(e) => {
@@ -736,13 +782,17 @@ impl TabWirelessStack {
             let line = Self::read_line(&mut port, Some(Duration::from_secs(10)))?;
             let result: OperatorResult = Self::parse_result(&line)?;
 
-            println!(
-                "[upgrade] status: {} ({})  |  error: {} ({})",
-                result.status,
-                upgrade_status_string(result.status),
-                result.error.unwrap_or(0),
-                operator_error_string(result.error.unwrap_or(0))
-            );
+            Self::send_log(
+                sender,
+                LogType::Info(format!(
+                    "[upgrade] status: {} ({})  |  error: {} ({})",
+                    result.status,
+                    upgrade_status_string(result.status),
+                    result.error.unwrap_or(0),
+                    operator_error_string(result.error.unwrap_or(0))
+                )),
+            )
+            .await;
 
             if let Some(ref err) = result.error {
                 if *err != 0 {
