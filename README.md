@@ -36,7 +36,7 @@ With OpenOCD, the program steps are :
   5. _(optionnal)_ Send test program 
 
 ### Stack Wireless
-The stack is flashed to the co-processor using the [FUS](https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WB_FUS) and a program called `operator`, which acts as a relay between high-level comands and the FUS. The `operator` is precompiled, but **is not** the official ST Microelectronics version, the sources are available [here](https://github.com/steamicc/codal-steami-samples/tree/main/samples/Peripherals/FUS_WS_Operator) ([https://github.com/steamicc/codal-steami-samples/tree/main/samples/Peripherals/FUS_WS_Operator](https://github.com/steamicc/codal-steami-samples/tree/main/samples/Peripherals/FUS_WS_Operator)).
+The stack is flashed to the co-processor using the [FUS](https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WB_FUS) and a program called `operator`, which acts as a relay between high-level commands and the FUS. The `operator` is precompiled, but **is not** the official ST Microelectronics version, the sources are available [here](https://github.com/steamicc/codal-steami-samples/tree/main/samples/Peripherals/FUS_WS_Operator) ([https://github.com/steamicc/codal-steami-samples/tree/main/samples/Peripherals/FUS_WS_Operator](https://github.com/steamicc/codal-steami-samples/tree/main/samples/Peripherals/FUS_WS_Operator)).
 
 
 ![screenshot](doc/screenshot.png)
@@ -112,14 +112,7 @@ The program offer a simple GUI interface to select the bootload and the firmware
 2. Install `openocd`
 3. Clone or download this repository `git clone https://github.com/steamicc/DapLink-EasyFlash.git`
 4. Enter in project folder `cd DapLink-EasyFlash`
-5. The application looks up `configs/` and `wireless_stack/` next to its
-   executable, so before the first `cargo run` link them into the build
-   directory:
-   ```
-   mkdir -p target/debug && ln -s "$PWD/configs" target/debug/ && ln -s "$PWD/wireless_stack" target/debug/
-   ```
-   (For release builds use `target/release/` instead.)
-6. Run `cargo run` from the project root.
+5. Run `cargo run` from the project root.
 
 ## Test files
 In the `test bin` folder, you can find some simple programs for targets. 

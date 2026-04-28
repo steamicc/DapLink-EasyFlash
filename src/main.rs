@@ -1,3 +1,4 @@
+use std::path::PathBuf;
 use std::process::exit;
 
 use iced::{window, Settings, Size};
@@ -21,16 +22,23 @@ struct ProcessResult {
 }
 
 fn main() -> iced::Result {
-    match std::env::current_exe() {
-        Ok(mut path) => {
-            path.pop();
-            dirs::set_exe_dir(path);
-        }
-        Err(e) => {
-            eprintln!("Failed to create/update scripts ({e})");
-            exit(100);
-        }
-    }
+    // Prefer CARGO_MANIFEST_DIR when running under `cargo run` so configs/
+    // and wireless_stack/ resolve from the repo root without manual symlinks.
+    // Falls back to the executable's parent dir for shipped builds.
+    let exe_dir = match std::env::var_os("CARGO_MANIFEST_DIR") {
+        Some(dir) => PathBuf::from(dir),
+        None => match std::env::current_exe() {
+            Ok(mut path) => {
+                path.pop();
+                path
+            }
+            Err(e) => {
+                eprintln!("Failed to determine executable directory ({e})");
+                exit(100);
+            }
+        },
+    };
+    dirs::set_exe_dir(exe_dir);
 
     iced::application(MainWindow::title, MainWindow::update, MainWindow::view)
         .theme(MainWindow::theme)
