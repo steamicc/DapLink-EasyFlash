@@ -113,17 +113,17 @@ where
         .into_string()
         .map_err(|_| "Failed to convert config path to string")?;
 
-    let ws_foler = dirs::get_wireless_stack_dir()?
+    let ws_folder = dirs::get_wireless_stack_dir()?
         .into_os_string()
         .into_string()
-        .map_err(|_| "Failed to convert config path to string")?;
+        .map_err(|_| "Failed to convert wireless stack path to string")?;
 
     let tmp_folder = dirs::get_tmp_dir()?
         .into_os_string()
         .into_string()
         .map_err(|_| "Failed to convert tmp_dir to string.")?;
 
-    cmd.args(&["-s", &config_folder, "-s", &tmp_folder, "-s", &ws_foler]);
+    cmd.args(&["-s", &config_folder, "-s", &tmp_folder, "-s", &ws_folder]);
 
     // The xpack-bundled OpenOCD ships its standard scripts alongside the
     // executable in `<exe_dir>/scripts/`. Our .cfg files reference these via
