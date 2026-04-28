@@ -1,8 +1,8 @@
-use std::{fs, path::PathBuf};
+use std::{fs, path::PathBuf, sync::OnceLock};
 
 use directories::ProjectDirs;
 
-static mut BASE_PATH: Option<PathBuf> = None;
+static EXE_DIR: OnceLock<PathBuf> = OnceLock::new();
 
 fn get_base_dir() -> Result<PathBuf, String> {
     match ProjectDirs::from("cc", "steami", "daplink-easyflash") {
@@ -14,19 +14,14 @@ fn get_base_dir() -> Result<PathBuf, String> {
 }
 
 pub fn set_exe_dir(pathbuf: PathBuf) {
-    unsafe {
-        BASE_PATH = Some(pathbuf);
-    }
+    let _ = EXE_DIR.set(pathbuf);
 }
 
 pub fn get_exe_dir() -> Result<PathBuf, String> {
-    unsafe {
-        #[allow(static_mut_refs)]
-        match BASE_PATH.as_ref() {
-            Some(path) => Ok(path.clone()),
-            None => Err("No base path available. This error should not be happen !".into()),
-        }
-    }
+    EXE_DIR
+        .get()
+        .cloned()
+        .ok_or_else(|| "No base path available. This error should not be happen !".into())
 }
 
 pub fn get_configs_dir() -> Result<PathBuf, String> {
