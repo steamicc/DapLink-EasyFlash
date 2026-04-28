@@ -105,25 +105,27 @@ impl MainWindow {
     }
 
     /// Deserialize the on-disk settings, with a fallback to the legacy 0.1.x
-    /// schema (a flat `EasyDapLink` serialized at the top level — now mapped
-    /// onto `tab_daplink`). Successful migrations get rewritten in the new
-    /// shape on the next `CloseRequested`.
+    /// schema where `TabDaplink` fields were serialized directly at the top
+    /// level and are now mapped onto `tab_daplink`. Successful migrations get
+    /// rewritten in the new shape on the next `CloseRequested`.
     fn load_settings(&mut self, content: &[u8]) {
         match serde_json::from_slice::<Self>(content) {
             Ok(obj) => {
                 self.tab_daplink = obj.tab_daplink;
                 self.tab_ws = obj.tab_ws;
                 println!("Settings loaded !");
-                return;
             }
-            Err(new_err) => {
-                if let Ok(legacy) = serde_json::from_slice::<TabDaplink>(content) {
+            Err(new_err) => match serde_json::from_slice::<TabDaplink>(content) {
+                Ok(legacy) => {
                     self.tab_daplink = legacy;
                     println!("Legacy settings migrated to the new schema");
-                    return;
                 }
-                eprintln!("Failed to deserialize settings. Error: {new_err}");
-            }
+                Err(legacy_err) => {
+                    eprintln!(
+                        "Failed to deserialize settings. New schema error: {new_err}. Legacy schema error: {legacy_err}"
+                    );
+                }
+            },
         }
     }
 }
