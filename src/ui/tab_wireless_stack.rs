@@ -103,9 +103,9 @@ const ALL_STACK: [WirelessStackFile; 21] = [
 ];
 
 impl TabWirelessStack {
-    /// True while a flash sequence is running. Used by `MainWindow` to
-    /// suppress window-close requests so the OpenOCD child or the FUS
-    /// upgrade isn't killed mid-operation.
+    /// True while an operation that should not be interrupted is running.
+    /// Used by `MainWindow` to suppress window-close requests so neither
+    /// the OpenOCD child nor an in-flight FUS upgrade gets cut mid-action.
     pub fn is_busy(&self) -> bool {
         self.is_readonly
     }

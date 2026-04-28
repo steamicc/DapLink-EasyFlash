@@ -56,15 +56,15 @@ impl MainWindow {
                         return Task::none();
                     }
                     iced::window::Event::CloseRequested => {
-                        // Suppress the close while a flash is in progress so
-                        // OpenOCD (or the FUS upgrade) isn't killed mid-write.
-                        // The opacity overlay already signals the busy state
-                        // visually; the user can SIGTERM if they really need
-                        // out, but a misclick on the X shouldn't brick the
-                        // device.
+                        // Suppress the close while an operation is in progress
+                        // so OpenOCD (or the FUS upgrade) isn't interrupted
+                        // mid-action. The opacity overlay already signals the
+                        // busy state visually; the user can force-quit / end
+                        // task the app if they really need out, but a misclick
+                        // on the X shouldn't brick the device.
                         if self.tab_daplink.is_busy() || self.tab_ws.is_busy() {
                             eprintln!(
-                                "Close request ignored: a flash is in progress."
+                                "Close request ignored: an operation is in progress."
                             );
                             return Task::none();
                         }
