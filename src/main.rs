@@ -43,6 +43,9 @@ fn main() -> iced::Result {
     iced::application(MainWindow::default, MainWindow::update, MainWindow::view)
         .title(MainWindow::title)
         .settings(Settings::default())
+        // After .settings(), which replaces the font list: iced_aw draws the
+        // number_input arrows with glyphs from its own font.
+        .font(iced_aw::ICED_AW_FONT_BYTES)
         .window(window::Settings {
             size: Size {
                 width: 550.0,
