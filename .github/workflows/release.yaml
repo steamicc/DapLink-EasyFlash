@@ -10,7 +10,19 @@ permissions:
   contents: write
 
 jobs:
+  create_release:
+    name: "Create draft release"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create draft release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # Immutable releases forbid adding files to a published release, so the
+        # release stays a draft until all the files are uploaded.
+        run: gh release create "${{ github.ref_name }}" --repo "${{ github.repository }}" --draft --verify-tag --title "${{ github.ref_name }}" --generate-notes
+
   relase_linux:
+    needs: create_release
     name: "Release for ${{matrix.os}}"
     strategy:
       matrix:
@@ -48,32 +60,31 @@ jobs:
           mv easy_flash_daplink artifacts/easy_flash_daplink-${{github.ref_name}}-${{matrix.os}}
           mv linux.zip artifacts/easy_flash_daplink-${{github.ref_name}}-xpack-${{matrix.os}}.zip
 
-      - name: Publish artifacts
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: artifacts/*
-          file_glob: true
-          tag: ${{ github.ref }}
+      - name: Upload artifacts to the draft release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "${{ github.ref_name }}" artifacts/* --repo "${{ github.repository }}"
 
   relase_windows:
+    needs: create_release
     name: "Release for Windows"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
       - name: Install packages
-        run: sudo apt install libatk1.0-dev pkg-config libgtk-3-dev
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mingw-w64
 
       - name: Install Rust
-        run: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-
-      - name: Install cross
-        run: cargo install cross
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-gnu
 
       - name: Build
         run: |
-          cross build --target x86_64-pc-windows-gnu --release --locked
+          cargo build --target x86_64-pc-windows-gnu --release --locked
           mv target/x86_64-pc-windows-gnu/release/easy_flash_daplink.exe easy_flash_daplink.exe
 
       - name: Create Windows archive /w XPack OpenOCD
@@ -94,10 +105,17 @@ jobs:
           mv easy_flash_daplink.exe artifacts/easy_flash_daplink-${{github.ref_name}}.exe
           mv windows.zip artifacts/easy_flash_daplink-${{github.ref_name}}-xpack-windows.zip
 
-      - name: Publish artifacts
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: artifacts/*
-          file_glob: true
-          tag: ${{ github.ref }}
+      - name: Upload artifacts to the draft release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "${{ github.ref_name }}" artifacts/* --repo "${{ github.repository }}"
+
+  publish_release:
+    name: "Publish release"
+    needs: [relase_linux, relase_windows]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publish the draft release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release edit "${{ github.ref_name }}" --repo "${{ github.repository }}" --draft=false
