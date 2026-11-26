@@ -20,6 +20,9 @@ use iced::{
     Element, Length, Task, Theme,
 };
 use super::form::{form, form_row};
+
+/// Fits "Wireless Stack", the longest label of this tab.
+const LABEL_WIDTH: f32 = 120.0;
 use serde::{Deserialize, Serialize};
 use serialport::{SerialPort, SerialPortType};
 
@@ -125,6 +128,7 @@ impl TabWirelessStack {
         let grid_fields = form(vec![
             form_row(
                 "Wireless Stack",
+                LABEL_WIDTH,
                 pick_list(&ALL_STACK[..], Some(&self.fw_selected), |x| {
                     Message::WirelessStack(TabWsMessage::StackSelected(x))
                 })
@@ -132,6 +136,7 @@ impl TabWirelessStack {
             ),
             form_row(
                 "Serial port",
+                LABEL_WIDTH,
                 row![
                     pick_list(
                         &self.serial_available_port[..],

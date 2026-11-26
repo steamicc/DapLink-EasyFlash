@@ -8,6 +8,9 @@ use iced::{
 use iced_aw::number_input;
 
 use super::form::{form, form_row};
+
+/// Fits "Timeout (s) for mount points", the longest label of this tab.
+const LABEL_WIDTH: f32 = 220.0;
 use serde::{Deserialize, Serialize};
 
 use crate::{disk_tool, log_entries::LogType, open_ocd_task, utils};
@@ -354,6 +357,7 @@ impl TabDaplink {
         let grid_files = form(vec![
             form_row(
                 "Bootloader file",
+                LABEL_WIDTH,
                 row![
                     text_input(
                         "Bootloader",
@@ -367,6 +371,7 @@ impl TabDaplink {
             ),
             form_row(
                 "Firmware file",
+                LABEL_WIDTH,
                 row![
                     text_input("Firmware", self.firmware_path.to_str().unwrap_or_default())
                         .on_input(|s| Message::DapLink(TabDaplinkMessage::InputFirmwarePath(s)))
@@ -377,6 +382,7 @@ impl TabDaplink {
             ),
             form_row(
                 "(Optional) User program",
+                LABEL_WIDTH,
                 row![
                     text_input(
                         "User program",
@@ -393,12 +399,14 @@ impl TabDaplink {
         let grid_settings = form(vec![
             form_row(
                 "Target mount name",
+                LABEL_WIDTH,
                 text_input("STeaMi, DIS_L4IOT, ...", &self.target_name)
                     .on_input(|s| Message::DapLink(TabDaplinkMessage::TargetNameChanged(s)))
                     .width(200),
             ),
             form_row(
                 "Timeout (s) for mount points",
+                LABEL_WIDTH,
                 number_input(&self.target_waiting_time, TIMEOUT_MIN..=TIMEOUT_MAX, |x| {
                     Message::DapLink(TabDaplinkMessage::TimeoutChanged(x))
                 })
