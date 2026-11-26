@@ -10,7 +10,19 @@ permissions:
   contents: write
 
 jobs:
+  create_release:
+    name: "Create draft release"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create draft release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # Immutable releases forbid adding files to a published release, so the
+        # release stays a draft until all the files are uploaded.
+        run: gh release create "${{ github.ref_name }}" --repo "${{ github.repository }}" --draft --verify-tag --title "${{ github.ref_name }}" --generate-notes
+
   relase_linux:
+    needs: create_release
     name: "Release for ${{matrix.os}}"
     strategy:
       matrix:
@@ -48,15 +60,13 @@ jobs:
           mv easy_flash_daplink artifacts/easy_flash_daplink-${{github.ref_name}}-${{matrix.os}}
           mv linux.zip artifacts/easy_flash_daplink-${{github.ref_name}}-xpack-${{matrix.os}}.zip
 
-      - name: Publish artifacts
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: artifacts/*
-          file_glob: true
-          tag: ${{ github.ref }}
+      - name: Upload artifacts to the draft release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "${{ github.ref_name }}" artifacts/* --repo "${{ github.repository }}"
 
   relase_windows:
+    needs: create_release
     name: "Release for Windows"
     runs-on: ubuntu-latest
     steps:
@@ -94,10 +104,17 @@ jobs:
           mv easy_flash_daplink.exe artifacts/easy_flash_daplink-${{github.ref_name}}.exe
           mv windows.zip artifacts/easy_flash_daplink-${{github.ref_name}}-xpack-windows.zip
 
-      - name: Publish artifacts
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: artifacts/*
-          file_glob: true
-          tag: ${{ github.ref }}
+      - name: Upload artifacts to the draft release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "${{ github.ref_name }}" artifacts/* --repo "${{ github.repository }}"
+
+  publish_release:
+    name: "Publish release"
+    needs: [relase_linux, relase_windows]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publish the draft release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release edit "${{ github.ref_name }}" --repo "${{ github.repository }}" --draft=false
