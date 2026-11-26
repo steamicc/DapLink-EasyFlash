@@ -2,10 +2,12 @@
 name = "easy_flash_daplink"
 version = "0.2.0"
 edition = "2021"
+# Pinned to the highest MSRV among our direct deps (currently iced 0.13).
+rust-version = "1.80"
 
 [dependencies]
 async-io = "2"
-directories = "5.0.1"
+directories = "6"
 iced = "0.13.1"
 iced_aw = { version = "0.11.0", default-features = false, features = ["grid", "number_input", "tab_bar"] }
 iced_fonts = { version = "0.1.1", features = [] }
