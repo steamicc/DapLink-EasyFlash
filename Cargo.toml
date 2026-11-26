@@ -2,15 +2,17 @@
 name = "easy_flash_daplink"
 version = "0.2.0"
 edition = "2021"
+# Pinned to the highest MSRV among our direct deps (iced, iced_aw and sysinfo).
+rust-version = "1.88"
 
 [dependencies]
 async-io = "2"
-directories = "5.0.1"
+directories = "6"
 iced = "0.14"
 iced_aw = { version = "0.14", default-features = false, features = ["number_input", "tab_bar"] }
 iced_fonts = { version = "0.3", features = [] }
 rfd = { version = "0.15.0", default-features = false, features = ["gtk3"] }
-sysinfo = "0.31.4"
+sysinfo = "0.38"
 serde = { version = "1.0.209", features = ["derive"] }
 serde_json = "1.0.127"
 serialport = "4.7.1"
