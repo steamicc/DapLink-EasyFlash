@@ -1,6 +1,6 @@
 use std::fs;
 
-use iced::{event, widget::column, Element, Event, Subscription, Task, Theme};
+use iced::{event, widget::column, Element, Event, Subscription, Task};
 use iced_aw::{TabBar, TabLabel};
 use serde::{Deserialize, Serialize};
 
@@ -23,10 +23,6 @@ pub struct MainWindow {
 impl MainWindow {
     pub fn title(&self) -> String {
         "Easy Flash DAPLink".to_owned()
-    }
-
-    pub fn theme(&self) -> Theme {
-        Theme::Light
     }
 
     pub fn update(&mut self, message: Message) -> Task<Message> {

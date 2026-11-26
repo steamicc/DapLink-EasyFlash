@@ -42,7 +42,6 @@ fn main() -> iced::Result {
 
     iced::application(MainWindow::default, MainWindow::update, MainWindow::view)
         .title(MainWindow::title)
-        .theme(MainWindow::theme)
         .settings(Settings::default())
         .window(window::Settings {
             size: Size {
