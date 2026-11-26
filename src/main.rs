@@ -40,10 +40,12 @@ fn main() -> iced::Result {
     };
     dirs::set_exe_dir(exe_dir);
 
-    iced::application(MainWindow::title, MainWindow::update, MainWindow::view)
-        .theme(MainWindow::theme)
+    iced::application(MainWindow::default, MainWindow::update, MainWindow::view)
+        .title(MainWindow::title)
         .settings(Settings::default())
-        .font(iced_fonts::REQUIRED_FONT_BYTES)
+        // After .settings(), which replaces the font list: iced_aw draws the
+        // number_input arrows with glyphs from its own font.
+        .font(iced_aw::ICED_AW_FONT_BYTES)
         .window(window::Settings {
             size: Size {
                 width: 550.0,

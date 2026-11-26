@@ -19,7 +19,10 @@ use iced::{
     widget::{button, center, column, container, opaque, pick_list, row, stack, text},
     Element, Length, Task, Theme,
 };
-use iced_aw::{grid, grid_row};
+use super::form::{form, form_row};
+
+/// Fits "Wireless Stack", the longest label of this tab.
+const LABEL_WIDTH: f32 = 120.0;
 use serde::{Deserialize, Serialize};
 use serialport::{SerialPort, SerialPortType};
 
@@ -42,6 +45,17 @@ const DELETE_CMD: &[u8] = "DELETE\n".as_bytes();
 const STATUS_CMD: &[u8] = "STATUS\n".as_bytes();
 const UPGRADE_CMD: &[u8] = "UPGRADE\n".as_bytes();
 const VERSION_CMD: &[u8] = "VERSION\n".as_bytes();
+
+/// Spawn a background task that produces `TabWsMessage`s. Wraps the
+/// `Task::run(channel(...), …)` boilerplate around an async closure so call
+/// sites stay terse. Done as a macro because `iced::stream::channel` takes an
+/// `impl AsyncFnOnce` and the future-Send constraint can't be expressed
+/// cleanly through a generic wrapper function.
+macro_rules! message_runner {
+    ($f:expr) => {
+        Task::run(channel(16, $f), Message::WirelessStack)
+    };
+}
 
 #[derive(Debug, Default, Clone)]
 pub enum FwStep {
@@ -111,16 +125,18 @@ impl TabWirelessStack {
     }
 
     pub fn view(&self) -> Element<Message> {
-        let grid_fields = grid!(
-            grid_row!(
+        let grid_fields = form(vec![
+            form_row(
                 "Wireless Stack",
+                LABEL_WIDTH,
                 pick_list(&ALL_STACK[..], Some(&self.fw_selected), |x| {
                     Message::WirelessStack(TabWsMessage::StackSelected(x))
                 })
-                .width(Length::Fill)
+                .width(Length::Fill),
             ),
-            grid_row!(
+            form_row(
                 "Serial port",
+                LABEL_WIDTH,
                 row![
                     pick_list(
                         &self.serial_available_port[..],
@@ -129,15 +145,11 @@ impl TabWirelessStack {
                     )
                     .width(Length::Fill),
                     button(text("Refresh"))
-                        .on_press(Message::WirelessStack(TabWsMessage::SerialRefresh))
+                        .on_press(Message::WirelessStack(TabWsMessage::SerialRefresh)),
                 ]
-                .spacing(8)
+                .spacing(8),
             ),
-        )
-        .width(Length::Fill)
-        .column_spacing(8)
-        .row_spacing(8)
-        .column_widths(&[Length::Shrink, Length::Fill]);
+        ]);
 
         let start_button = button(
             text("Start 🚀")
@@ -221,7 +233,7 @@ impl TabWirelessStack {
             .push(LogType::Info("Start flashing...".to_string()));
 
         let serial = self.serial_selected.as_ref().unwrap().clone();
-        Self::message_runner(|mut o| async move {
+        message_runner!(async move |mut o| {
             match Self::test_serial_port(&serial.port) {
                 Ok(_) => Self::send_step(&mut o, FwStep::StepFlashOperator).await,
                 Err(e) => Self::error_handle(&mut o, e).await,
@@ -232,7 +244,7 @@ impl TabWirelessStack {
     fn step_flash_operator(&mut self) -> Task<Message> {
         self.log.push(LogType::Info("Flash operator".to_string()));
 
-        Self::message_runner(|mut o| async move {
+        message_runner!(async move |mut o| {
             match open_ocd_task::flash_wb55("wb55_operator.hex", &mut o).await {
                 Ok(result) => match result.code {
                     Some(0) => {
@@ -265,7 +277,7 @@ impl TabWirelessStack {
         self.log.push(LogType::Info("FUS update".to_string()));
 
         let serial = self.serial_selected.as_ref().unwrap().clone();
-        Self::message_runner(|mut o| async move {
+        message_runner!(async move |mut o| {
             Timer::after(Duration::from_secs(1)).await;
 
             let mut port = match Self::open_port(&serial.port) {
@@ -349,7 +361,7 @@ impl TabWirelessStack {
         )));
 
         let serial = self.serial_selected.as_ref().unwrap().clone();
-        Self::message_runner(|mut o| async move {
+        message_runner!(async move |mut o| {
             if let Err(e) = Self::prepare_merged_hex(&file) {
                 Self::error_handle(&mut o, e).await;
                 return;
@@ -396,7 +408,7 @@ impl TabWirelessStack {
             .push(LogType::Info("Delete current wireless stack".to_string()));
 
         let serial = self.serial_selected.as_ref().unwrap().clone();
-        Self::message_runner(|mut o| async move {
+        message_runner!(async move |mut o| {
             let mut port = match Self::open_port(&serial.port) {
                 Ok(port) => port,
                 Err(e) => {
@@ -454,7 +466,7 @@ impl TabWirelessStack {
 
         let serial = self.serial_selected.as_ref().unwrap().clone();
         let fw = wireless_stack_config(self.fw_selected);
-        Self::message_runner(move |mut o| async move {
+        message_runner!(async move |mut o| {
             if let Err(e) = Self::prepare_merged_hex(fw) {
                 Self::error_handle(&mut o, e).await;
                 return;
@@ -503,12 +515,6 @@ impl TabWirelessStack {
         })
     }
 
-    fn message_runner<F>(f: impl FnOnce(mpsc::Sender<TabWsMessage>) -> F + 'static) -> Task<Message>
-    where
-        F: Future<Output = ()> + std::marker::Send + 'static,
-    {
-        Task::run(channel(16, f), |x| Message::WirelessStack(x))
-    }
 
     fn merge_ws_hex(first: &Path, second: &Path, result: &Path) -> Result<(), String> {
         let mut result_file = fs::OpenOptions::new()

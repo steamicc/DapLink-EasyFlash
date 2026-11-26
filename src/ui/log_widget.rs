@@ -42,7 +42,7 @@ impl LogWidget {
                     }
                 };
                 entry
-                    .size(Pixels::from(TEXT_SIZE))
+                    .size(Pixels(TEXT_SIZE as f32))
                     .font(Font::MONOSPACE)
                     .into()
             })
