@@ -10,3 +10,6 @@ venv/
 
 CLAUDE.md
 .codex
+
+# semantic-release tooling
+node_modules/
