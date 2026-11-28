@@ -1,0 +1,59 @@
+name: Semantic Release
+
+# Computes the next version from the Conventional Commits merged on main,
+# commits it to Cargo.toml/Cargo.lock and pushes the v* tag. The tag push
+# starts release.yaml, which builds the binaries and publishes the release.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: semantic-release
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    name: Semantic Release
+    # The release commit itself (pushed by this workflow) never needs a release.
+    if: "!startsWith(github.event.head_commit.message, 'chore(release):')"
+    runs-on: ubuntu-latest
+    steps:
+      # No credentials left in .git/config: semantic-release pushes with the
+      # App token it puts in its own push URL, nothing else gets a token.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # cargo refreshes Cargo.lock in the prepare step (scripts/set-version.sh).
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@39008827e6b4319a349e9a42dfc90579dd25f1ca # stable
+        with:
+          toolchain: stable
+
+      - run: npm ci
+
+      # A tag pushed with GITHUB_TOKEN would not start release.yaml: push with
+      # the GitHub App token instead (the App also bypasses the main ruleset).
+      # Generated last, so only the semantic-release step can read it.
+      - name: Generate token
+        id: app_token
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        with:
+          client-id: ${{ secrets.RELEASE_APP_ID }}
+          private-key: ${{ secrets.RELEASE_APP_SECRET }}
+
+      - name: Run semantic-release
+        env:
+          GITHUB_TOKEN: ${{ steps.app_token.outputs.token }}
+        run: npx semantic-release
