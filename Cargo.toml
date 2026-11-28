@@ -1,6 +1,6 @@
 [package]
 name = "easy_flash_daplink"
-version = "0.2.0"
+version = "1.0.0"
 edition = "2021"
 # Pinned to the highest MSRV among our direct deps (iced, iced_aw and sysinfo).
 rust-version = "1.88"
