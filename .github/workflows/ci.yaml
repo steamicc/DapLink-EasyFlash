@@ -9,6 +9,10 @@ on:
     branches:
         - main
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   build:
     name: "Build (${{matrix.os}})"
@@ -27,6 +31,12 @@ jobs:
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust builds
+        uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with:
+          save-if: ${{ github.ref == 'refs/heads/main' }}
+          key: ${{ matrix.os }}
 
       - name: Build
         run: cargo build --release --locked
@@ -47,6 +57,11 @@ jobs:
         with:
           targets: x86_64-pc-windows-gnu
 
+      - name: Cache Rust builds
+        uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with:
+          save-if: ${{ github.ref == 'refs/heads/main' }}
+
       - name: Build
         run: cargo build --target x86_64-pc-windows-gnu --release --locked
 
@@ -65,6 +80,11 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy, rustfmt
+
+      - name: Cache Rust builds
+        uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with:
+          save-if: ${{ github.ref == 'refs/heads/main' }}
 
       - name: cargo fmt --check
         continue-on-error: true
