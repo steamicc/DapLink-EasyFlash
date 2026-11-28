@@ -100,6 +100,7 @@ Le programme offre une interface simplifiée, permettant de selectionner les fic
 #### Pour la stack wireless
  1. Sélectionner le port série de votre carte
  2. Choisir une stack. Un descriptif des stacks est disponible [plus bas](#descriptif-détaillé-des-stacks)
+    - *BLE HCI Layer* est présélectionnée : c'est la seule stack validée sur la STeaMi (v1.20.0), avec MicroPython et Arduino.
  3. Appuyer sur le bouton "Start"
 
 

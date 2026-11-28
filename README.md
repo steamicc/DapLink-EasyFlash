@@ -102,6 +102,7 @@ The program offer a simple GUI interface to select the bootload and the firmware
 ### Wireless Stack
  1. Select the board serial port
  2. Choose a stack. A description of the stacks is available [below](#stack-details)
+    - *BLE HCI Layer* is preselected: it is the only stack validated on the STeaMi (v1.20.0), with MicroPython and Arduino.
  3. Press the “Start” button
 
 :bulb: Pro tips: All inputs are saved for the next time you will open the tool !

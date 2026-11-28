@@ -190,6 +190,9 @@ mod tests {
         assert!(s.contains(r#""user_file_path":"/tmp/user.bin""#));
         assert!(s.contains(r#""target_waiting_time":7"#));
         assert!(s.contains(r#""target_name":"LEGACY-STEAMI""#));
+
+        // Legacy settings had no wireless stack: the default one is used.
+        assert!(s.contains(r#""fw_selected":"BleHci""#), "in: {s}");
     }
 
     #[test]
