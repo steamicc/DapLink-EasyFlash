@@ -1,0 +1,69 @@
+{
+    "device": "STM32",
+    "processor": "STM32WB",
+    "architecture": "CORTEX_M4F",
+    "mcu": "cortex-m4",
+    "series": "STM32WBxx",
+    "product_line": "STM32WB55xx",
+    "variant": "STM32WBxx/WB55R(C-E-G)V",
+    "board": "STEAM32_WB55RG",
+    "toolchain": "ARM_GCC",
+    "post_process": "",
+    "generate_bin": true,
+    "generate_hex": true,
+    "config": {
+      "DEVICE_SRAM_BASE": "0x20000004",
+      "DEVICE_SRAM_END": "0x20030000",
+      "DEVICE_STACK_BASE": "DEVICE_SRAM_END",
+      "DEVICE_STACK_SIZE": 2048,
+      "DEVICE_HEAP_ALLOCATOR": 1,
+      "DEVICE_TAG": 0,
+      "SCHEDULER_TICK_PERIOD_US": 1000,
+      "EVENT_LISTENER_DEFAULT_FLAGS": "MESSAGE_BUS_LISTENER_DROP_IF_BUSY",
+      "MESSAGE_BUS_LISTENER_MAX_QUEUE_DEPTH": 10,
+      "USE_ACCEL_LSB": 0,
+      "DEVICE_DEFAULT_SERIAL_MODE": "SerialMode::SYNC_SLEEP",
+      "DEVICE_COMPONENT_COUNT": 30,
+      "DEVICE_DEFAULT_PULLMODE": "PullMode::Down",
+      "DEVICE_PANIC_HEAP_FULL": 1,
+      "DEVICE_DMESG_BUFFER_SIZE": 2048,
+      "CODAL_DEBUG": "CODAL_DEBUG_DISABLED",
+      "CODAL_TIMESTAMP": "uint64_t",
+      "PROCESSOR_WORD_TYPE": "uintptr_t",
+      "DEVICE_I2C_IRQ_SHARED": 1,
+      "CODAL_PROVIDE_PRINTF": 1,
+      "BOARD_NAME": "\"STEAM32_WB55RG\"",
+      "PERIPHERAL_PINS": "PeripheralPins_STEAM32_WB55RG",
+      "VARIANT": "variant_STEAM32_WB55RG",
+      "VARIANT_H": "\"variant_STEAM32_WB55RG.h\"",
+      "ARDUINO_STEAM32_WB55RG": 1,
+      "HAL_UART_MODULE_ENABLED": 1
+    },
+    "definitions": "-DSTM32WBxx -DSTM32WB55xx -DCUSTOM_PERIPHERAL_PINS -include codal-stm32-STEAM32_WB55RG/inc/localconf.h -DI2C_IRQ_PRIO=0",
+    "cmake_definitions": {},
+    "cpu_opts": "-mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard",
+    "asm_flags": "-fno-exceptions -fno-unwind-tables --specs=nano.specs -mcpu=cortex-m4 -mthumb",
+    "c_flags": "-O0 -ggdb3 -std=c2x --specs=nano.specs -Warray-bounds -u _printf_float -Wno-format",
+    "cpp_flags": "-O0 -ggdb3 -std=c++23 -fwrapv -fno-rtti -fno-inline -fno-threadsafe-statics -fno-exceptions -fno-unwind-tables -Wl,--gc-sections -Wl,--sort-common -Wl,--sort-section=alignment -Wno-format -u _printf_float",
+    "linker_flags": "-Wl,--no-wchar-size-warning -Wl,--gc-sections -Wl,--wrap,atexit -Wl,--defsym=LD_FLASH_OFFSET=0 -Wl,--defsym=LD_MAX_SIZE=0x100000 -Wl,--defsym=LD_MAX_DATA_SIZE=0x30000 -mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard -Wl,--start-group -lstdc++ -lsupc++ -lm -lc -lgcc -Wl,--end-group",
+    "libraries": [
+      {
+        "name": "codal-core",
+        "url": "https://github.com/letssteam/codal-core.git",
+        "branch": "main",
+        "type": "git"
+      },
+      {
+        "name": "codal-stm32",
+        "url": "https://github.com/letssteam/codal-stm32",
+        "branch": "main",
+        "type": "git"
+      },
+      {
+        "name": "codal-stm32-STEAM32_WB55RG", 
+        "url": "https://github.com/letssteam/codal-stm32-STEAM32_WB55RG",
+        "branch": "main",
+        "type": "git"
+      }
+    ]
+  }

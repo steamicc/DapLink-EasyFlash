@@ -36,7 +36,7 @@ With OpenOCD, the program steps are :
   5. _(optionnal)_ Send test program 
 
 ### Stack Wireless
-The stack is flashed to the co-processor using the [FUS](https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WB_FUS) and a program called `operator`, which acts as a relay between high-level commands and the FUS. The `operator` is precompiled, but **is not** the official ST Microelectronics version, the sources are available [here](https://github.com/steamicc/codal-steami-samples/tree/main/samples/Peripherals/FUS_WS_Operator) ([https://github.com/steamicc/codal-steami-samples/tree/main/samples/Peripherals/FUS_WS_Operator](https://github.com/steamicc/codal-steami-samples/tree/main/samples/Peripherals/FUS_WS_Operator)).
+The stack is flashed to the co-processor using the [FUS](https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WB_FUS) and a program called `operator`, which acts as a relay between high-level commands and the FUS. The `operator` is precompiled, but **is not** the official ST Microelectronics version, its sources are in [`fus-operator/`](fus-operator/) ([https://github.com/steamicc/DapLink-EasyFlash/tree/main/fus-operator](https://github.com/steamicc/DapLink-EasyFlash/tree/main/fus-operator)), with their provenance, their license and how to rebuild the operator.
 
 
 ![screenshot](doc/screenshot.png)
