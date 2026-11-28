@@ -46,12 +46,17 @@ jobs:
       # A tag pushed with GITHUB_TOKEN would not start release.yaml: push with
       # the GitHub App token instead (the App also bypasses the main ruleset).
       # Generated last, so only the semantic-release step can read it.
+      # Scoped to this repository (no owner/repositories input) and to
+      # contents: write only, the one permission needed to push the release
+      # commit, the tag and the semantic-release notes. No issues or
+      # pull-requests: @semantic-release/github is not used.
       - name: Generate token
         id: app_token
         uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
         with:
           client-id: ${{ secrets.RELEASE_APP_ID }}
           private-key: ${{ secrets.RELEASE_APP_SECRET }}
+          permission-contents: write
 
       - name: Run semantic-release
         env:
