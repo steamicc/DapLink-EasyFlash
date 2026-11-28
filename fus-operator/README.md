@@ -33,8 +33,8 @@ The files in this folder are byte-for-byte copies of the files of the same path 
 
 | File here | Git blob |
 |-----------|----------|
-| `samples/Peripherals/FUS_WS_Operator/FUS_WS_Operator.cpp` | `1844b7b12d5aefe6555f6a675f0137ef7548bc28` |
-| `samples/Peripherals/FUS_WS_Operator/FUS_WS_Operator.h` | `44186235d863b690ac934fd9d0d196909a789349` |
+| `samples/Peripherals/FUS_WS_Operator/FUS_WS_Operator.cpp` | `44186235d863b690ac934fd9d0d196909a789349` |
+| `samples/Peripherals/FUS_WS_Operator/FUS_WS_Operator.h` | `1844b7b12d5aefe6555f6a675f0137ef7548bc28` |
 | `samples/main.cpp` | `edb759159cd54701bd7b4c1d60244d8e72349cf6` |
 | `CMakeLists.txt` | `333fa81fb5533abbf2884af7c820db152c830dfd` |
 | `target.json` | `5bd4cbb0204349583614c39151023e4bc9ce17d9` |
