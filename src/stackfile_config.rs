@@ -4,8 +4,10 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub enum WirelessStackFile {
     BleHciAdvScan,
-    #[default]
     BleHciExt,
+    /// Preselected: BLE HCI Layer is the only stack validated on the STeaMi
+    /// (v1.20.0, used by both MicroPython and Arduino).
+    #[default]
     BleHci,
     BleMac,
     BleLld,
@@ -90,5 +92,19 @@ impl std::fmt::Display for WirelessStackFile {
             WirelessStackFile::ZigbeeFfd => "Zigbee FFD",
             WirelessStackFile::ZigbeeRfd => "Zigbee RFD",
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn default_stack_is_ble_hci_layer() {
+        assert_eq!(WirelessStackFile::default(), WirelessStackFile::BleHci);
+        assert_eq!(
+            wireless_stack_config(WirelessStackFile::default()),
+            "stm32wb5xxG_BLE_HCILayer_fw.hex"
+        );
     }
 }

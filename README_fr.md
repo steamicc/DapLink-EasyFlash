@@ -52,20 +52,20 @@ Pour ne pas avoir à installer OpenOCD sur votre système, nous vous recommendon
 
 ### :floppy_disk: Bootloader & Firmware (DapLink)
 - Bootloader
-  - STM32F103xB: [https://github.com/letssteam/DAPLink/releases/latest/download/stm32f103xb_bl.bin](https://github.com/letssteam/DAPLink/releases/latest/download/stm32f103xb_bl.bin)
+  - STM32F103xB: [https://github.com/steamicc/DAPLink/releases/latest/download/stm32f103xb_bl.bin](https://github.com/steamicc/DAPLink/releases/latest/download/stm32f103xb_bl.bin)
 
 - Firmware
-  - STM32L475VG: [https://github.com/letssteam/DAPLink/releases/latest/download/stm32f103xb_stm32l475vg_if.bin
-](https://github.com/letssteam/DAPLink/releases/latest/download/stm32f103xb_stm32l475vg_if.bin
+  - STM32L475VG: [https://github.com/steamicc/DAPLink/releases/latest/download/stm32f103xb_stm32l475vg_if.bin
+](https://github.com/steamicc/DAPLink/releases/latest/download/stm32f103xb_stm32l475vg_if.bin
 )  
-  - STM32WB55RG: [https://github.com/letssteam/DAPLink/releases/latest/download/stm32f103xb_stm32wb55rg_if.bin
-](https://github.com/letssteam/DAPLink/releases/latest/download/stm32f103xb_stm32wb55rg_if.bin
+  - STM32WB55RG: [https://github.com/steamicc/DAPLink/releases/latest/download/stm32f103xb_stm32wb55rg_if.bin
+](https://github.com/steamicc/DAPLink/releases/latest/download/stm32f103xb_stm32wb55rg_if.bin
 )  
-  - STeaMi: [https://github.com/letssteam/DAPLink/releases/latest/download/stm32f103xb_steami32_if.bin
-](https://github.com/letssteam/DAPLink/releases/latest/download/stm32f103xb_steami32_if.bin
+  - STeaMi: [https://github.com/steamicc/DAPLink/releases/latest/download/stm32f103xb_steami32_if.bin
+](https://github.com/steamicc/DAPLink/releases/latest/download/stm32f103xb_steami32_if.bin
 )
 
-:bulb: Les ancienne releases sont disponible ici: [https://github.com/letssteam/DAPLink/releases](https://github.com/letssteam/DAPLink/releases)
+:bulb: Les ancienne releases sont disponible ici: [https://github.com/steamicc/DAPLink/releases](https://github.com/steamicc/DAPLink/releases)
 
 :warning: Pour toutes autres target, consulter la page GitHub de [DapLink](https://github.com/ARMmbed/DAPLink)
 
@@ -100,6 +100,7 @@ Le programme offre une interface simplifiée, permettant de selectionner les fic
 #### Pour la stack wireless
  1. Sélectionner le port série de votre carte
  2. Choisir une stack. Un descriptif des stacks est disponible [plus bas](#descriptif-détaillé-des-stacks)
+    - *BLE HCI Layer* est présélectionnée : c'est la seule stack validée sur la STeaMi (v1.20.0), avec MicroPython et Arduino.
  3. Appuyer sur le bouton "Start"
 
 
