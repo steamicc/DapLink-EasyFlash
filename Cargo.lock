@@ -733,7 +733,7 @@ checksum = "edf234dd1594d6dd434a8fb8cada51ddbbc593e40e4a01556a0b31c62da2775b"
 
 [[package]]
 name = "easy_flash_daplink"
-version = "1.0.0"
+version = "1.4.0"
 dependencies = [
  "async-io",
  "directories",
