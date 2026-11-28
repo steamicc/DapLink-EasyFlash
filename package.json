@@ -3,7 +3,7 @@
   "private": true,
   "description": "Release tooling (semantic-release) for DapLink-EasyFlash.",
   "engines": {
-    "node": ">=20.17"
+    "node": "^22.14.0 || >=24.10.0"
   },
   "devDependencies": {
     "@semantic-release/commit-analyzer": "13.0.1",
