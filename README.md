@@ -54,20 +54,20 @@ To avoid installing OpenOCD on your computer, we recommend using the pre-built v
 
 ### :floppy_disk: Bootloader & Firmware
 - Bootloader
-  - STM32F103xB: [https://github.com/letssteam/DAPLink/releases/latest/download/stm32f103xb_bl.bin](https://github.com/letssteam/DAPLink/releases/latest/download/stm32f103xb_bl.bin)
+  - STM32F103xB: [https://github.com/steamicc/DAPLink/releases/latest/download/stm32f103xb_bl.bin](https://github.com/steamicc/DAPLink/releases/latest/download/stm32f103xb_bl.bin)
 
 - Firmware
-  - STM32L475VG: [https://github.com/letssteam/DAPLink/releases/latest/download/stm32f103xb_stm32l475vg_if.bin
-](https://github.com/letssteam/DAPLink/releases/latest/download/stm32f103xb_stm32l475vg_if.bin
+  - STM32L475VG: [https://github.com/steamicc/DAPLink/releases/latest/download/stm32f103xb_stm32l475vg_if.bin
+](https://github.com/steamicc/DAPLink/releases/latest/download/stm32f103xb_stm32l475vg_if.bin
 )  
-  - STM32WB55RG: [https://github.com/letssteam/DAPLink/releases/latest/download/stm32f103xb_stm32wb55rg_if.bin
-](https://github.com/letssteam/DAPLink/releases/latest/download/stm32f103xb_stm32wb55rg_if.bin
+  - STM32WB55RG: [https://github.com/steamicc/DAPLink/releases/latest/download/stm32f103xb_stm32wb55rg_if.bin
+](https://github.com/steamicc/DAPLink/releases/latest/download/stm32f103xb_stm32wb55rg_if.bin
 )  
-  - STeaMi: [https://github.com/letssteam/DAPLink/releases/latest/download/stm32f103xb_steami32_if.bin
-](https://github.com/letssteam/DAPLink/releases/latest/download/stm32f103xb_steami32_if.bin
+  - STeaMi: [https://github.com/steamicc/DAPLink/releases/latest/download/stm32f103xb_steami32_if.bin
+](https://github.com/steamicc/DAPLink/releases/latest/download/stm32f103xb_steami32_if.bin
 )
 
-:bulb: Older releases are available here: [https://github.com/letssteam/DAPLink/releases](https://github.com/letssteam/DAPLink/releases)
+:bulb: Older releases are available here: [https://github.com/steamicc/DAPLink/releases](https://github.com/steamicc/DAPLink/releases)
 
 :warning: For other targets, please go directly to the [DapLink](https://github.com/ARMmbed/DAPLink) GitHub 
 ## Usage
