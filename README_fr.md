@@ -36,7 +36,7 @@ La procédure de chargement de DapLink est la suivante :
   5. _(optionnel)_ Transfert du programme de test 
 
 ### Stack Wireless
-La stack est flashé sur le co-processeur à l'aide du [FUS](https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WB_FUS) et d'un programme appelé `operator`, ce dernier fait le relais entre des commandes haut niveau de l'`operator` et le FUS. L'`operator` est précompilé, mais **n'est pas** la version officiel de ST Microelectronics, les sources sont disponible à cette [adresse](https://github.com/steamicc/codal-steami-samples/tree/main/samples/Peripherals/FUS_WS_Operator) ([https://github.com/steamicc/codal-steami-samples/tree/main/samples/Peripherals/FUS_WS_Operator](https://github.com/steamicc/codal-steami-samples/tree/main/samples/Peripherals/FUS_WS_Operator)).
+La stack est flashé sur le co-processeur à l'aide du [FUS](https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WB_FUS) et d'un programme appelé `operator`, ce dernier fait le relais entre des commandes haut niveau de l'`operator` et le FUS. L'`operator` est précompilé, mais **n'est pas** la version officiel de ST Microelectronics, ses sources sont dans [`fus-operator/`](fus-operator/) ([https://github.com/steamicc/DapLink-EasyFlash/tree/main/fus-operator](https://github.com/steamicc/DapLink-EasyFlash/tree/main/fus-operator)), avec leur provenance, leur licence et la façon de reconstruire l'`operator` (en anglais).
 
 ![screenshot](doc/screenshot.png)
 

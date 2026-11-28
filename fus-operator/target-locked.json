@@ -1,0 +1,70 @@
+{
+    "architecture": "CORTEX_M4F",
+    "asm_flags": "-fno-exceptions -fno-unwind-tables --specs=nano.specs -mcpu=cortex-m4 -mthumb",
+    "board": "STEAM32_WB55RG",
+    "c_flags": "-O0 -ggdb3 -std=c2x --specs=nano.specs -Warray-bounds -u _printf_float -Wno-format",
+    "cmake_definitions": {},
+    "config": {
+        "ARDUINO_STEAM32_WB55RG": 1,
+        "BOARD_NAME": "\"STEAM32_WB55RG\"",
+        "CODAL_DEBUG": "CODAL_DEBUG_DISABLED",
+        "CODAL_PROVIDE_PRINTF": 1,
+        "CODAL_TIMESTAMP": "uint64_t",
+        "DEVICE_COMPONENT_COUNT": 30,
+        "DEVICE_DEFAULT_PULLMODE": "PullMode::Down",
+        "DEVICE_DEFAULT_SERIAL_MODE": "SerialMode::SYNC_SLEEP",
+        "DEVICE_DMESG_BUFFER_SIZE": 2048,
+        "DEVICE_HEAP_ALLOCATOR": 1,
+        "DEVICE_I2C_IRQ_SHARED": 1,
+        "DEVICE_PANIC_HEAP_FULL": 1,
+        "DEVICE_SRAM_BASE": "0x20000004",
+        "DEVICE_SRAM_END": "0x20030000",
+        "DEVICE_STACK_BASE": "DEVICE_SRAM_END",
+        "DEVICE_STACK_SIZE": 2048,
+        "DEVICE_TAG": 0,
+        "EVENT_LISTENER_DEFAULT_FLAGS": "MESSAGE_BUS_LISTENER_DROP_IF_BUSY",
+        "HAL_UART_MODULE_ENABLED": 1,
+        "MESSAGE_BUS_LISTENER_MAX_QUEUE_DEPTH": 10,
+        "PERIPHERAL_PINS": "PeripheralPins_STEAM32_WB55RG",
+        "PROCESSOR_WORD_TYPE": "uintptr_t",
+        "SCHEDULER_TICK_PERIOD_US": 1000,
+        "USE_ACCEL_LSB": 0,
+        "VARIANT": "variant_STEAM32_WB55RG",
+        "VARIANT_H": "\"variant_STEAM32_WB55RG.h\""
+    },
+    "cpp_flags": "-O0 -ggdb3 -std=c++23 -fwrapv -fno-rtti -fno-inline -fno-threadsafe-statics -fno-exceptions -fno-unwind-tables -Wl,--gc-sections -Wl,--sort-common -Wl,--sort-section=alignment -Wno-format -u _printf_float",
+    "cpu_opts": "-mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard",
+    "definitions": "-DSTM32WBxx -DSTM32WB55xx -DCUSTOM_PERIPHERAL_PINS -include codal-stm32-STEAM32_WB55RG/inc/localconf.h -DI2C_IRQ_PRIO=0",
+    "device": "STM32",
+    "generate_bin": true,
+    "generate_hex": true,
+    "libraries": [
+        {
+            "branch": "02c59a859bac46cea65acc268a1ca01036ea7dae",
+            "name": "codal-core",
+            "type": "git",
+            "url": "https://github.com/letssteam/codal-core.git"
+        },
+        {
+            "branch": "bfdb5c861a39cf482f93ce6f3bb2b42da8684287",
+            "name": "codal-stm32",
+            "type": "git",
+            "url": "https://github.com/letssteam/codal-stm32"
+        },
+        {
+            "branch": "d281ea287d57d00ccc6b06b4aa683c150c1de6fc",
+            "name": "codal-stm32-STEAM32_WB55RG",
+            "type": "git",
+            "url": "https://github.com/letssteam/codal-stm32-STEAM32_WB55RG"
+        }
+    ],
+    "linker_flags": "-Wl,--no-wchar-size-warning -Wl,--gc-sections -Wl,--wrap,atexit -Wl,--defsym=LD_FLASH_OFFSET=0 -Wl,--defsym=LD_MAX_SIZE=0x100000 -Wl,--defsym=LD_MAX_DATA_SIZE=0x30000 -mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard -Wl,--start-group -lstdc++ -lsupc++ -lm -lc -lgcc -Wl,--end-group",
+    "mcu": "cortex-m4",
+    "post_process": "",
+    "processor": "STM32WB",
+    "product_line": "STM32WB55xx",
+    "series": "STM32WBxx",
+    "snapshot_version": "v0.0.2",
+    "toolchain": "ARM_GCC",
+    "variant": "STM32WBxx/WB55R(C-E-G)V"
+}
